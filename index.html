@@ -41,6 +41,8 @@
     </div>
   </div>
 
+  <div id="calib-toast" class="fixed top-24 left-1/2 -translate-x-1/2 z-40 hidden px-5 py-3 rounded-full bg-black/80 border border-sky-400/50 font-mono text-sm"></div>
+
   <!-- Header -->
   <header class="fixed top-0 inset-x-0 z-40 border-b border-white/10 bg-[#07080C]/85 backdrop-blur-xl">
     <div class="max-w-[1720px] mx-auto px-6 lg:px-12 h-20 flex items-center justify-between gap-4">
@@ -59,6 +61,7 @@
     <div class="card rounded-full px-3 py-2 flex items-center gap-2">
       <button id="btn-autorotate" class="px-4 py-2 rounded-full font-semibold text-sky-300 bg-sky-400/15 border border-sky-400/30 whitespace-nowrap">Auto-rotate: on</button>
       <button id="btn-reset-cam" class="px-4 py-2 rounded-full font-semibold text-slate-200 hover:bg-white/10 whitespace-nowrap">Reset view</button>
+      <button id="btn-calib" class="px-4 py-2 rounded-full font-semibold text-slate-200 hover:bg-white/10 whitespace-nowrap">Calibrate: off</button>
     </div>
   </div>
 
@@ -86,10 +89,11 @@
       <div class="w-full lg:w-[700px] pointer-events-auto">
         <div class="card rounded-3xl p-8 sm:p-10">
           <h2 class="font-display text-4xl sm:text-5xl font-extrabold tracking-tight mb-4">Buttons and controls</h2>
-          <p class="text-lg text-slate-200 mb-6">Select a part to see what it does.</p>
+          <p class="text-lg text-slate-200 mb-6">Select an item to see what it does. On the headset, the 3D model turns to show it and highlights the part.</p>
           <div class="inline-flex p-1 rounded-full bg-white/10 mb-6" role="tablist">
             <button id="tab-headset" class="tab-on px-5 py-2 rounded-full font-bold">Headset</button>
-            <button id="tab-controller" class="tab-off px-5 py-2 rounded-full font-bold">Touch Plus controllers</button>
+            <button id="tab-controller" class="tab-off px-5 py-2 rounded-full font-bold">Controllers</button>
+            <button id="tab-hand" class="tab-off px-5 py-2 rounded-full font-bold">Hand tracking</button>
           </div>
           <div class="grid sm:grid-cols-2 gap-6">
             <div id="btn-list" class="space-y-2 max-h-[46vh] overflow-y-auto pr-1"></div>
@@ -97,6 +101,15 @@
               <div id="btn-title" class="text-2xl font-bold mb-2"></div>
               <div id="btn-where" class="text-sm font-semibold text-sky-300 mb-3"></div>
               <p id="btn-desc" class="text-lg text-slate-100 leading-relaxed"></p>
+              <div id="ctrl-svg-wrap" class="hidden mt-4">
+                <svg viewBox="0 0 400 190" class="w-full" role="img" aria-label="Touch Plus controllers, top view. Selected part is highlighted.">
+                  <rect x="15" y="12" width="165" height="150" rx="75" fill="#1c2230" stroke="#4b5568" stroke-width="2"/>
+                  <rect x="220" y="12" width="165" height="150" rx="75" fill="#1c2230" stroke="#4b5568" stroke-width="2"/>
+                  <text x="97" y="188" text-anchor="middle" fill="#cbd5e1" font-size="13">Left</text>
+                  <text x="303" y="188" text-anchor="middle" fill="#cbd5e1" font-size="13">Right</text>
+                  <g id="ctrl-dots"></g>
+                </svg>
+              </div>
             </div>
           </div>
         </div>
@@ -167,6 +180,9 @@
         <span class="text-xl font-bold">Select or drop meta_quest_3.glb</span>
       </label>
       <p id="modal-status" class="mt-4 text-base text-slate-300">Waiting for model…</p>
+      <details class="mt-3"><summary class="cursor-pointer font-semibold">Mesh names in your model</summary>
+        <pre id="mesh-names" class="mt-2 max-h-48 overflow-auto text-sm text-slate-300 bg-black/40 p-3 rounded-xl"></pre>
+      </details>
     </div>
   </div>
 
@@ -178,27 +194,38 @@
     import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
     // ---------- Content ----------
+    const CAM = { m: ['camera'], p: [0.3, 0.05, 0.5] };
+    // m = keywords matched against mesh/material names in your GLB; p = fallback position as a fraction of the model's bounding box [x, y, z]
+    // (x: + is the headset's left side, y: + is up, z: + is the front). Use "Calibrate" to find better values.
     const buttons = {
       headset: [
-        { n: 'Power button', w: 'Left side of the headset', d: 'Press once to put the headset to sleep or wake it. Hold to open the power menu (Power off or Restart). Holding for about 10 seconds forces a restart.' },
-        { n: 'Volume buttons', w: 'Left side, next to power', d: 'Raise or lower the volume. Hold Power and Volume down together while the headset is off to open the boot menu.' },
-        { n: 'Proximity sensor', w: 'Between the lenses', d: 'Detects when you put the headset on and wakes it. Cover it with a piece of tape or a finger to keep the headset awake while testing.' },
-        { n: 'IPD dial', w: 'Underside of the headset', d: 'Sets the distance between the lenses to match your eyes. The Quest 3S has three presets: 58, 63 and 68 mm. Pick the one where text looks sharpest.' },
-        { n: 'Passthrough cameras', w: 'Front of the headset', d: 'Color cameras that show the real room while you wear the headset. They also track your controllers and hands.' },
-        { n: 'Depth sensor', w: 'Front of the headset', d: 'Maps the shape of your room so virtual objects can sit on your furniture and your Guardian boundary stays accurate.' },
-        { n: 'Microphones', w: 'Underside of the headset', d: 'Pick up your voice for chat and voice commands. Mute from Quick Settings if you need privacy.' },
-        { n: 'USB-C port', w: 'Left side of the headset', d: 'Charges the headset and connects it to a PC for Quest Link or Meta Quest Developer Hub.' }
+        { n: 'Power button', w: 'Left side of the headset', d: 'Press once to put the headset to sleep or wake it. Hold to open the power menu (Power off or Restart). Holding for about 10 seconds forces a restart.', m: ['power'], p: [0.5, -0.05, 0.1] },
+        { n: 'Volume buttons', w: 'Left side, next to power', d: 'Raise or lower the volume. Hold Power and Volume down together while the headset is off to open the boot menu.', m: ['volume'], p: [0.5, 0.05, 0.0] },
+        { n: 'Proximity sensor', w: 'Between the lenses', d: 'Detects when you put the headset on and wakes it. Cover it with tape or a finger to keep the headset awake while testing.', m: ['proximity'], p: [0, 0.1, -0.35] },
+        { n: 'IPD dial', w: 'Underside of the headset', d: 'Sets the distance between the lenses to match your eyes. The Quest 3S has three presets: 58, 63 and 68 mm. Pick the one where text looks sharpest.', m: ['ipd', 'dial'], p: [0.15, -0.5, 0.05] },
+        { n: 'Passthrough cameras', w: 'Front of the headset', d: 'Color cameras that show the real room while you wear the headset. They also track your controllers and hands.', ...CAM },
+        { n: 'Depth sensor', w: 'Front of the headset', d: 'Maps the shape of your room so virtual objects can sit on your furniture and your Guardian boundary stays accurate.', m: ['depth'], p: [0, 0, 0.5] },
+        { n: 'Microphones', w: 'Underside of the headset', d: 'Pick up your voice for chat and voice commands. Mute from Quick Settings if you need privacy.', m: ['mic'], p: [-0.15, -0.5, 0.3] },
+        { n: 'USB-C port', w: 'Left side of the headset', d: 'Charges the headset and connects it to a PC for Quest Link or Meta Quest Developer Hub.', m: ['usb'], p: [0.5, -0.2, 0.0] }
       ],
       controller: [
-        { n: 'Thumbstick', w: 'Top of each controller', d: 'Move and turn in apps. Press it down to use it as a button (often run or snap-turn).' },
-        { n: 'A and B buttons', w: 'Right controller, top face', d: 'Main action buttons. A is usually select or jump, B is usually back or cancel.' },
-        { n: 'X and Y buttons', w: 'Left controller, top face', d: 'Secondary action buttons. Their jobs change by app, such as inventory or tools.' },
-        { n: 'Menu button', w: 'Left controller, small button above X', d: 'Opens the in-app menu or pauses the game. Hold it to recenter your view in some apps.' },
-        { n: 'Meta button', w: 'Right controller, small button above B', d: 'Tap to open the Meta universal menu from any app. Hold to recenter your view.' },
-        { n: 'Trigger', w: 'Under your index finger', d: 'Select, shoot or confirm. Also used to point at and click items in menus.' },
-        { n: 'Grip button', w: 'Under your middle finger', d: 'Grab and hold objects. In menus, holding it lets you drag the window.' },
-        { n: 'Thumb rest', w: 'Beside the thumbstick', d: 'A touch-sensitive surface that lets the controller show a relaxed thumb pose and detect thumbs-up gestures.' },
-        { n: 'Battery compartment', w: 'Bottom of each controller', d: 'Each controller uses one AA battery. Slide the cover off to replace it.' }
+        { n: 'Thumbstick', w: 'Top of each controller', d: 'Move and turn in apps. Press it down to use it as a button (often run or snap-turn).', dots: [[80, 100], [320, 100]] },
+        { n: 'A and B buttons', w: 'Right controller, top face', d: 'Main action buttons. A is usually select or jump, B is usually back or cancel.', dots: [[260, 70], [260, 125]] },
+        { n: 'X and Y buttons', w: 'Left controller, top face', d: 'Secondary action buttons. Their jobs change by app, such as inventory or tools.', dots: [[140, 70], [140, 125]] },
+        { n: 'Menu button', w: 'Left controller, small button above X', d: 'Opens the in-app menu or pauses the game. Hold it to recenter your view in some apps.', dots: [[150, 38]] },
+        { n: 'Meta button', w: 'Right controller, small button above B', d: 'Tap to open the Meta universal menu from any app. Hold to recenter your view.', dots: [[250, 38]] },
+        { n: 'Trigger', w: 'Underside, under your index finger (shown at the top edge)', d: 'Select, shoot or confirm. Also used to point at and click items in menus.', dots: [[97, 22], [303, 22]] },
+        { n: 'Grip button', w: 'Outer edge, under your middle finger (shown at the sides)', d: 'Grab and hold objects. In menus, holding it lets you drag the window.', dots: [[24, 95], [376, 95]] },
+        { n: 'Thumb rest', w: 'Beside the thumbstick', d: 'A touch-sensitive surface that lets the controller show a relaxed thumb pose and detect thumbs-up gestures.', dots: [[85, 148], [315, 148]] },
+        { n: 'Battery compartment', w: 'Bottom of each controller', d: 'Each controller uses one AA battery. Slide the cover off to replace it.', dots: [[97, 172], [303, 172]] }
+      ],
+      hand: [
+        { n: 'Turn on hand tracking', w: 'Settings, then Movement tracking', d: 'Switch on Hand and body tracking. Then set both controllers down for a few seconds and the headset switches to your hands. Pick the controllers up and it switches back.', ...CAM },
+        { n: 'Point and pinch (select)', w: 'Index finger and thumb', d: 'A ray extends from your hand to point at menus. Touch your index finger to your thumb to click, just like pressing the trigger.', ...CAM },
+        { n: 'Pinch and drag (scroll, move)', w: 'Hold the pinch', d: 'Keep the pinch closed and move your hand to scroll lists, drag sliders or move windows. Open your fingers to let go.', ...CAM },
+        { n: 'Poke (direct touch)', w: 'Index fingertip', d: 'When a panel is within arm’s reach, tap it directly with a fingertip. Pushing through the surface presses the button.', ...CAM },
+        { n: 'Menu gesture', w: 'Palm facing you', d: 'Raise your hand with your palm toward your face and pinch to open the universal menu. Hold the pinch to recenter your view. The exact gesture can vary with software version.', ...CAM },
+        { n: 'Tracking tips', w: 'Front cameras', d: 'The front cameras must see your hands. Keep them between chest and face height, in good light, and avoid crossing hands or wearing gloves. Hands outside the cameras’ view lose tracking.', ...CAM }
       ]
     };
 
@@ -247,13 +274,33 @@
       });
     }
 
-    let group = 'headset';
+    let group = 'headset', selected = 0;
+    const tabIds = { headset: 'tab-headset', controller: 'tab-controller', hand: 'tab-hand' };
+    const svgDots = document.getElementById('ctrl-dots');
+    buttons.controller.forEach((it, i) => it.dots.forEach(([x, y]) => {
+      const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      c.setAttribute('cx', x); c.setAttribute('cy', y); c.dataset.i = i;
+      svgDots.appendChild(c);
+    }));
+    function markDots() {
+      svgDots.querySelectorAll('circle').forEach(c => {
+        const on = group === 'controller' && Number(c.dataset.i) === selected;
+        c.setAttribute('r', on ? 14 : 8);
+        c.setAttribute('fill', on ? '#38BDF8' : '#556070');
+        c.setAttribute('stroke', on ? '#fff' : 'none');
+        c.setAttribute('stroke-width', 3);
+      });
+    }
     function showButton(i) {
+      selected = i;
       const item = buttons[group][i];
       document.getElementById('btn-title').textContent = item.n;
       document.getElementById('btn-where').textContent = item.w;
       document.getElementById('btn-desc').textContent = item.d;
       document.querySelectorAll('#btn-list button').forEach((b, k) => b.classList.toggle('item-on', k === i));
+      document.getElementById('ctrl-svg-wrap').classList.toggle('hidden', group !== 'controller');
+      markDots();
+      applyFocus();
     }
     function renderList() {
       const list = document.getElementById('btn-list');
@@ -269,13 +316,12 @@
     }
     function setGroup(g) {
       group = g;
-      document.getElementById('tab-headset').className = (g === 'headset' ? 'tab-on' : 'tab-off') + ' px-5 py-2 rounded-full font-bold';
-      document.getElementById('tab-controller').className = (g === 'controller' ? 'tab-on' : 'tab-off') + ' px-5 py-2 rounded-full font-bold';
+      for (const [k, id] of Object.entries(tabIds)) {
+        document.getElementById(id).className = (k === g ? 'tab-on' : 'tab-off') + ' px-5 py-2 rounded-full font-bold';
+      }
       renderList();
     }
-    document.getElementById('tab-headset').onclick = () => setGroup('headset');
-    document.getElementById('tab-controller').onclick = () => setGroup('controller');
-    setGroup('headset');
+    for (const [k, id] of Object.entries(tabIds)) document.getElementById(id).onclick = () => setGroup(k);
 
     // Hold-to-restart practice
     const holdBtn = document.getElementById('hold-btn');
@@ -333,20 +379,31 @@
     const dot = document.getElementById('model-dot');
     const modalStatus = document.getElementById('modal-status');
 
+    let wrapperRef = null, modelSize = null;
+    const meshes = [];
     function mount(gltfScene) {
-      while (root.children.length) root.remove(root.children[0]);
+      if (wrapperRef) root.remove(wrapperRef);
       gltfScene.updateMatrixWorld(true);
       const box = new THREE.Box3().setFromObject(gltfScene);
       const size = box.getSize(new THREE.Vector3());
       const c = box.getCenter(new THREE.Vector3());
+      const sc = 1.9 / (Math.max(size.x, size.y, size.z) || 1);
       const wrapper = new THREE.Group();
       gltfScene.position.set(-c.x, -c.y, -c.z);
       wrapper.add(gltfScene);
-      wrapper.scale.setScalar(1.9 / (Math.max(size.x, size.y, size.z) || 1));
+      wrapper.scale.setScalar(sc);
       root.add(wrapper);
+      wrapperRef = wrapper;
+      modelSize = size.clone().multiplyScalar(sc);
+      meshes.length = 0;
+      const names = [];
+      gltfScene.traverse(o => { if (o.isMesh) { meshes.push(o); names.push(o.name || '(unnamed)'); } });
+      document.getElementById('mesh-names').textContent = names.join('\n') || 'No meshes found';
       label.textContent = 'Model: meta_quest_3.glb';
       dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400';
-      modalStatus.textContent = 'meta_quest_3.glb mounted ✓';
+      modalStatus.textContent = 'meta_quest_3.glb mounted ✓ (' + meshes.length + ' meshes)';
+      clearHighlight();
+      applyFocus();
     }
     function loadModel(url) {
       loader.load(url, (g) => mount(g.scene), undefined, () => {
@@ -383,6 +440,92 @@
     let activeStage = 0;
     let autoRotate = true;
 
+    // ---------- Feature focus: highlight + rotate to show ----------
+    let focus = false, highlighted = [], calibrate = false;
+    function makeGlow() {
+      const c = document.createElement('canvas'); c.width = c.height = 128;
+      const g = c.getContext('2d');
+      const gr = g.createRadialGradient(64, 64, 4, 64, 64, 60);
+      gr.addColorStop(0, 'rgba(56,189,248,.95)'); gr.addColorStop(.35, 'rgba(56,189,248,.35)'); gr.addColorStop(1, 'rgba(56,189,248,0)');
+      g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
+      g.strokeStyle = '#fff'; g.lineWidth = 5; g.beginPath(); g.arc(64, 64, 26, 0, Math.PI * 2); g.stroke();
+      const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+    }
+    const marker = new THREE.Sprite(new THREE.SpriteMaterial({ map: makeGlow(), depthTest: false, transparent: true }));
+    marker.renderOrder = 999; marker.visible = false;
+    root.add(marker);
+
+    const meshText = m => [m.name, m.parent && m.parent.name, Array.isArray(m.material) ? '' : (m.material && m.material.name)].join(' ').toLowerCase();
+    function highlightMesh(m) {
+      if (Array.isArray(m.material) || !m.material || !('emissive' in m.material)) return;
+      highlighted.push({ m, orig: m.material });
+      const mat = m.material.clone();
+      mat.emissive = new THREE.Color(0x38bdf8); mat.emissiveIntensity = 1.6;
+      m.material = mat;
+    }
+    function clearHighlight() {
+      highlighted.forEach(({ m, orig }) => { m.material.dispose(); m.material = orig; });
+      highlighted = [];
+    }
+    function clearFocus() { focus = false; marker.visible = false; clearHighlight(); }
+
+    function focusFeature(item) {
+      clearHighlight();
+      let local = null;
+      const hits = item.m ? meshes.filter(m => item.m.some(k => meshText(m).includes(k))) : [];
+      if (hits.length) {
+        const ry = root.rotation.y, py = root.position.y;
+        root.rotation.y = 0; root.position.y = 0; root.updateMatrixWorld(true);
+        const box = new THREE.Box3();
+        hits.forEach(h => box.expandByObject(h));
+        local = root.worldToLocal(box.getCenter(new THREE.Vector3()));
+        root.rotation.y = ry; root.position.y = py; root.updateMatrixWorld(true);
+        hits.forEach(highlightMesh);
+      } else if (item.p && modelSize) {
+        local = new THREE.Vector3(item.p[0] * modelSize.x, item.p[1] * modelSize.y, item.p[2] * modelSize.z);
+      }
+      if (!local) { clearFocus(); return; }
+      marker.position.copy(local); marker.visible = true; focus = true;
+      let a = -Math.atan2(local.x, local.z);
+      a += Math.PI * 2 * Math.round((root.rotation.y - a) / (Math.PI * 2));
+      targetRotY = a;
+      targetCam.set(0.4, THREE.MathUtils.clamp(local.y * 1.2, -0.8, 0.8) + 0.1, 2.3);
+      targetLook.set(-0.6, THREE.MathUtils.clamp(local.y * 0.7, -0.6, 0.6), 0);
+    }
+    function applyFocus() {
+      if (activeStage !== 1 || group === 'controller') { clearFocus(); return; }
+      focusFeature(buttons[group][selected]);
+    }
+
+    // Calibration: click the model to get a fractional position (copied to clipboard)
+    const toast = document.getElementById('calib-toast');
+    const btnCal = document.getElementById('btn-calib');
+    btnCal.onclick = () => {
+      calibrate = !calibrate;
+      btnCal.textContent = 'Calibrate: ' + (calibrate ? 'on' : 'off');
+      btnCal.classList.toggle('text-sky-300', calibrate);
+      if (calibrate && autoRotate) btnRot.click();
+      toast.classList.toggle('hidden', !calibrate);
+      toast.textContent = 'Click a spot on the model';
+    };
+    const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+    let downAt = null;
+    canvas.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; });
+    canvas.addEventListener('pointerup', e => {
+      if (!calibrate || !downAt || !modelSize) return;
+      if (Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) return;
+      ndc.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+      ray.setFromCamera(ndc, camera);
+      const hit = ray.intersectObject(root, true).find(h => h.object !== marker);
+      if (!hit) return;
+      const l = root.worldToLocal(hit.point.clone());
+      const f = v => v.toFixed(2);
+      const txt = 'p: [' + f(l.x / modelSize.x) + ', ' + f(l.y / modelSize.y) + ', ' + f(l.z / modelSize.z) + ']' + (hit.object.name ? '  mesh: "' + hit.object.name + '"' : '');
+      marker.position.copy(l); marker.visible = true;
+      toast.textContent = txt;
+      try { navigator.clipboard.writeText(txt); } catch (_) {}
+    });
+
     function setStage(i) {
       activeStage = i;
       const f = frames[i];
@@ -391,6 +534,7 @@
         const on = Number(b.dataset.nav) === i;
         b.className = 'nav-link px-4 py-2 rounded-full transition ' + (on ? 'text-white bg-white/15' : 'text-slate-300 hover:text-white hover:bg-white/10');
       });
+      applyFocus();
     }
     window.scrollToStage = (i) => document.getElementById('stage-' + i)?.scrollIntoView({ behavior: 'smooth' });
     addEventListener('scroll', () => {
@@ -414,6 +558,7 @@
       const f = frames[activeStage];
       targetCam.copy(f.cam); targetLook.copy(f.look);
       root.rotation.set(0, f.rotY, 0);
+      applyFocus();
     };
 
     const clock = new THREE.Clock();
@@ -422,9 +567,10 @@
       const dt = clock.getDelta();
       camera.position.lerp(targetCam, 0.05);
       controls.target.lerp(targetLook, 0.05);
-      if (autoRotate) root.rotation.y += dt * 0.32;
+      if (autoRotate && !focus) root.rotation.y += dt * 0.32;
       else root.rotation.y = THREE.MathUtils.lerp(root.rotation.y, targetRotY, 0.06);
       root.position.y = Math.sin(clock.elapsedTime * 1.1) * 0.015;
+      if (marker.visible) marker.scale.setScalar(0.2 + 0.05 * Math.sin(clock.elapsedTime * 5));
       controls.update();
       renderer.render(scene, camera);
     }
@@ -434,6 +580,7 @@
       renderer.setSize(innerWidth, innerHeight);
     });
     setStage(0);
+    setGroup('headset');
     animate();
   </script>
 </body>
