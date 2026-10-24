@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dräger PSS® 7000 — Interactive 3D Training &amp; System Architecture</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Three.js Import Map (with GLTFLoader, DRACOLoader, RoomEnvironment) -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          colors: {
+            obsidian: '#07080C',
+            brandBlue: '#38BDF8',
+            brandEmerald: '#10B981',
+            brandAmber: '#F59E0B',
+            brandRed: '#EF4444',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.25) #07080C;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background-color: #07080C;
+      color: #FFFFFF;
+    }
+
+    body {
+      margin: 0;
+      overflow-x: hidden;
+      background-color: #07080C;
+      font-family: 'Inter', sans-serif;
+      color: #FFFFFF;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Editorial High-Contrast Glassmorphic Cards */
+    .editorial-card {
+      background: rgba(14, 16, 23, 0.80);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: 0 28px 60px -15px rgba(0, 0, 0, 0.78);
+    }
+
+    /* Smooth Custom Range Sliders */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      background: rgba(255, 255, 255, 0.18);
+      height: 8px;
+      border-radius: 999px;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      cursor: pointer;
+      border: 3px solid #38BDF8;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+      transition: transform 0.15s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.12);
+    }
+
+    /* Emergency PASS Alarm Screen Vignette */
+    @keyframes passFlash {
+      0%, 100% { box-shadow: inset 0 0 0px rgba(239, 68, 68, 0); }
+      50% { box-shadow: inset 0 0 110px rgba(239, 68, 68, 0.55); }
+    }
+    .pass-alarm-active {
+      animation: passFlash 0.5s infinite;
+    }
+
+    @keyframes pulseLed {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.22; transform: scale(0.95); }
+    }
+    .led-blink {
+      animation: pulseLed 0.5s infinite;
+    }
+  </style>
+</head>
+<body class="selection:bg-white selection:text-black">
+
+  <!-- ===================================================================== -->
+  <!-- FIXED 3D & VIDEO BACKGROUND VIEWPORT (STRICTLY LOCAL ASSETS ONLY)     -->
+  <!-- ===================================================================== -->
+  <div id="viewport-wrapper" class="fixed inset-0 w-full h-full z-0 overflow-hidden bg-[#07080C]">
+
+    <!-- Hero Background Video (Strictly ./intro.mp4) -->
+    <video
+      id="intro-video"
+      src="./intro.mp4"
+      autoplay
+      muted
+      loop
+      playsinline
+      class="absolute inset-0 w-full h-full object-cover opacity-55 transition-opacity duration-700 pointer-events-none"
+    ></video>
+
+    <!-- Studio Vignette Overlay -->
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_68%_50%,rgba(22,30,46,0.28)_0%,#07080C_85%)] pointer-events-none z-10"></div>
+
+    <!-- Three.js WebGL Canvas (Loads ONLY unit.glb, body.glb, tank.glb, mask.glb) -->
+    <canvas id="three-canvas" class="block w-full h-full relative z-20 cursor-grab active:cursor-grabbing"></canvas>
+
+    <!-- Subtle Active Model Badge in Upper-Right Viewport -->
+    <div class="fixed top-24 right-6 lg:right-12 z-25 pointer-events-none hidden sm:flex items-center gap-3 px-4 py-2 rounded-full bg-black/60 backdrop-blur-md border border-white/15">
+      <span id="viewport-status-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+      <span id="viewport-active-label" class="text-sm font-semibold text-white tracking-wide">
+        Active Model: unit.glb
+      </span>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- TOP EDITORIAL NAVIGATION BAR                                          -->
+  <!-- ===================================================================== -->
+  <header class="fixed top-0 left-0 right-0 z-40 border-b border-white/10 bg-[#07080C]/85 backdrop-blur-xl">
+    <div class="max-w-[1720px] mx-auto px-6 lg:px-12 h-20 flex items-center justify-between gap-4">
+
+      <!-- Brand Title -->
+      <div class="flex items-center gap-3.5">
+        <div class="w-3 h-3 rounded-full bg-brandBlue"></div>
+        <div>
+          <span class="font-display font-extrabold tracking-tight text-xl sm:text-2xl text-white">
+            Dräger PSS® 7000
+          </span>
+          <span class="hidden md:inline-block text-sm text-slate-300 font-medium ml-3 pl-3 border-l border-white/20">
+            Firefighter Breathing Apparatus Training
+          </span>
+        </div>
+      </div>
+
+      <!-- Scrollytelling Section Navigation -->
+      <nav class="hidden xl:flex items-center gap-1.5 text-base font-semibold">
+        <button onclick="window.scrollToStage(0)" data-nav="0" class="nav-link px-4 py-2 rounded-full text-white bg-white/15 transition">
+          Intro
+        </button>
+        <button onclick="window.scrollToStage(1)" data-nav="1" class="nav-link px-4 py-2 rounded-full text-slate-300 hover:text-white hover:bg-white/10 transition">
+          01. Complete Unit
+        </button>
+        <button onclick="window.scrollToStage(2)" data-nav="2" class="nav-link px-4 py-2 rounded-full text-slate-300 hover:text-white hover:bg-white/10 transition">
+          02. Backplate &amp; Harness
+        </button>
+        <button onclick="window.scrollToStage(3)" data-nav="3" class="nav-link px-4 py-2 rounded-full text-slate-300 hover:text-white hover:bg-white/10 transition">
+          03. 300 Bar Cylinder
+        </button>
+        <button onclick="window.scrollToStage(4)" data-nav="4" class="nav-link px-4 py-2 rounded-full text-slate-300 hover:text-white hover:bg-white/10 transition">
+          04. FPS 7000 Mask
+        </button>
+      </nav>
+
+      <!-- Right Action Controls -->
+      <div class="flex items-center gap-3">
+        <button id="btn-pass-header" class="px-4 py-2.5 rounded-full bg-red-500/20 border border-red-500/50 hover:bg-red-500/30 text-white font-semibold text-sm transition flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+          <span>PASS Alarm</span>
+        </button>
+        <button id="btn-open-loader" class="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-sm transition">
+          Load Local Folder / Files
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- STICKY BOTTOM 3D MODEL SELECTOR BAR (unit / body / tank / mask)       -->
+  <!-- ===================================================================== -->
+  <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 w-max max-w-[95vw]">
+    <div class="editorial-card rounded-full px-3 py-2 flex items-center gap-1.5 sm:gap-2 overflow-x-auto">
+      <button onclick="window.selectModel('unit')" id="pill-unit" class="model-pill px-4 py-2 rounded-full text-sm sm:text-base font-bold bg-white text-black transition whitespace-nowrap">
+        unit.glb (Complete SCBA)
+      </button>
+      <button onclick="window.selectModel('body')" id="pill-body" class="model-pill px-4 py-2 rounded-full text-sm sm:text-base font-semibold text-white hover:bg-white/10 transition whitespace-nowrap">
+        body.glb (Backplate)
+      </button>
+      <button onclick="window.selectModel('tank')" id="pill-tank" class="model-pill px-4 py-2 rounded-full text-sm sm:text-base font-semibold text-white hover:bg-white/10 transition whitespace-nowrap">
+        tank.glb (300 Bar Cylinder)
+      </button>
+      <button onclick="window.selectModel('mask')" id="pill-mask" class="model-pill px-4 py-2 rounded-full text-sm sm:text-base font-semibold text-white hover:bg-white/10 transition whitespace-nowrap">
+        mask.glb (FPS 7000 Mask)
+      </button>
+      <div class="h-6 w-px bg-white/20 mx-1"></div>
+      <button id="btn-autorotate" class="px-4 py-2 rounded-full text-sm sm:text-base font-semibold text-sky-300 bg-sky-400/15 border border-sky-400/30 transition whitespace-nowrap">
+        Auto-Rotate: On
+      </button>
+      <button id="btn-reset-cam" class="px-4 py-2 rounded-full text-sm sm:text-base font-semibold text-slate-200 hover:bg-white/10 transition whitespace-nowrap">
+        Reset View
+      </button>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MAIN SCROLLYTELLING CONTENT                                           -->
+  <!-- ===================================================================== -->
+  <main class="relative z-20 pointer-events-none">
+
+    <!-- ================================================================= -->
+    <!-- STAGE 0 // HERO SECTION (./intro.mp4 + ./unit.glb)                -->
+    <!-- ================================================================= -->
+    <section id="stage-0" data-stage="0" class="min-h-screen flex items-center pt-28 pb-24 px-6 sm:px-12 lg:px-20 max-w-[1720px] mx-auto">
+      <div class="max-w-3xl pointer-events-auto">
+        <div class="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white text-base font-semibold mb-6 backdrop-blur-md">
+          <span class="w-2.5 h-2.5 rounded-full bg-brandBlue"></span>
+          <span>Firefighter Breathing Apparatus Training — intro.mp4 &amp; unit.glb</span>
+        </div>
+
+        <h1 class="font-display text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.05] mb-6">
+          Dräger PSS® 7000 Breathing Apparatus
+        </h1>
+
+        <p class="text-white text-xl sm:text-2xl leading-relaxed font-normal mb-10 max-w-2xl">
+          Engineered by firefighters for firefighters. Explore the complete <strong class="font-bold">Dräger PSS® 7000</strong> compressed air breathing apparatus across four dedicated 3D assemblies—combining ergonomic load distribution, fail-safe pneumatics, and integrated electronic telemetry.
+        </p>
+
+        <!-- Key Headline Specs -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-10">
+          <div class="editorial-card rounded-2xl p-6">
+            <div class="text-4xl sm:text-5xl font-display font-extrabold text-white tracking-tight">
+              300 bar
+            </div>
+            <div class="text-xl font-bold text-white mt-2">
+              Operating Pressure
+            </div>
+            <div class="text-base text-slate-300 mt-1">
+              6.8 L or 9.0 L carbon cylinder
+            </div>
+          </div>
+
+          <div class="editorial-card rounded-2xl p-6">
+            <div class="text-4xl sm:text-5xl font-display font-extrabold text-white tracking-tight">
+              Type 2
+            </div>
+            <div class="text-xl font-bold text-white mt-2">
+              EN 137 Classification
+            </div>
+            <div class="text-base text-slate-300 mt-1">
+              Certified structural firefighting SCBA
+            </div>
+          </div>
+
+          <div class="editorial-card rounded-2xl p-6">
+            <div class="text-4xl sm:text-5xl font-display font-extrabold text-white tracking-tight">
+              &gt;500 L/m
+            </div>
+            <div class="text-xl font-bold text-white mt-2">
+              Peak Airflow
+            </div>
+            <div class="text-base text-slate-300 mt-1">
+              Positive-pressure Lung Demand Valve
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-4">
+          <button onclick="window.scrollToStage(1)" class="px-8 py-4 rounded-full bg-white text-black font-bold text-lg hover:bg-slate-200 transition shadow-xl">
+            Begin Interactive Inspection ↓
+          </button>
+          <span class="text-lg text-slate-200 font-medium">
+            Scroll down or click the bottom model pills to switch between <strong class="text-white">unit.glb</strong>, <strong class="text-white">body.glb</strong>, <strong class="text-white">tank.glb</strong>, and <strong class="text-white">mask.glb</strong>.
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- STAGE 1 // COMPLETE SYSTEM ARCHITECTURE (./unit.glb)              -->
+    <!-- ================================================================= -->
+    <section id="stage-1" data-stage="1" class="min-h-screen flex items-center py-28 px-6 sm:px-12 lg:px-20 max-w-[1720px] mx-auto">
+      <div class="w-full lg:w-[660px] pointer-events-auto">
+        <div class="editorial-card rounded-3xl p-8 sm:p-10">
+          <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-sky-400/15 border border-sky-400/30 text-sky-300 text-base font-bold mb-5">
+            <span>Section 01 — Complete System Architecture (unit.glb)</span>
+          </div>
+
+          <h2 class="font-display text-4xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight mb-6">
+            Integrated Pneumatic &amp; Electronic Architecture
+          </h2>
+
+          <p class="text-white text-xl leading-relaxed mb-8">
+            The complete <strong class="font-bold">Dräger PSS® 7000</strong> assembly unifies a carbon-composite carrying system, high-pressure compressed air cylinder, positive-pressure breathing loop, and the <strong class="font-bold">Bodyguard® 7000</strong> electronic monitoring unit into a single streamlined profile.
+          </p>
+
+          <div class="grid grid-cols-2 gap-4 mb-8">
+            <div class="p-5 rounded-2xl bg-white/5 border border-white/15">
+              <div class="text-3xl sm:text-4xl font-display font-extrabold text-white">
+                ~11.9 kg
+              </div>
+              <div class="text-lg font-bold text-white mt-1">
+                Ready-to-Deploy Weight
+              </div>
+              <div class="text-base text-slate-300 mt-0.5">
+                Complete with 6.8 L charged cylinder &amp; mask
+              </div>
+            </div>
+
+            <div class="p-5 rounded-2xl bg-white/5 border border-white/15">
+              <div class="text-3xl sm:text-4xl font-display font-extrabold text-white">
+                -30° to +60°C
+              </div>
+              <div class="text-lg font-bold text-white mt-1">
+                Thermal Operating Range
+              </div>
+              <div class="text-base text-slate-300 mt-0.5">
+                Tested for flashover &amp; sub-zero conditions
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-5">
+            <div class="p-6 rounded-2xl bg-white/5 border border-white/10">
+              <h3 class="text-2xl font-bold text-white mb-2">
+                Recessed Hose &amp; Cable Protection
+              </h3>
+              <p class="text-slate-100 text-lg leading-relaxed">
+                Medium-pressure air supply hoses and Bodyguard® 7000 telemetry cables are routed directly through protective channels moulded into the carbon backplate, drastically reducing the risk of snagging in structural collapse environments.
+              </p>
+            </div>
+
+            <div class="p-6 rounded-2xl bg-white/5 border border-white/10">
+              <h3 class="text-2xl font-bold text-white mb-2">
+                Modular Quick-Release Subsystems
+              </h3>
+              <p class="text-slate-100 text-lg leading-relaxed">
+                The shoulder harness, waist pad, pneumatics, and cylinder cam-lock strap detach without tools—allowing rapid post-incident decontamination and turnaround on the fireground.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- STAGE 2 // CARBON BACKPLATE & HARNESS (./body.glb)                -->
+    <!-- ================================================================= -->
+    <section id="stage-2" data-stage="2" class="min-h-screen flex items-center py-28 px-6 sm:px-12 lg:px-20 max-w-[1720px] mx-auto">
+      <div class="w-full lg:w-[660px] pointer-events-auto">
+        <div class="editorial-card rounded-3xl p-8 sm:p-10">
+          <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-sky-400/15 border border-sky-400/30 text-sky-300 text-base font-bold mb-5">
+            <span>Section 02 — Carrying System &amp; Reducer (body.glb)</span>
+          </div>
+
+          <h2 class="font-display text-4xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight mb-6">
+            Carbon-Composite Backplate &amp; Dynamic Harness
+          </h2>
+
+          <p class="text-white text-xl leading-relaxed mb-8">
+            Isolated in <strong class="font-bold">body.glb</strong>, the carrying frame is moulded from high-strength, anti-static carbon-fiber composite designed to transfer the load onto the wearer’s hips and pelvic center of gravity.
+          </p>
+
+          <div class="space-y-5">
+            <div class="p-6 rounded-2xl bg-white/5 border border-white/10">
+              <h3 class="text-2xl font-bold text-white mb-2">
+                3-Position Torso Height Adjustment
+              </h3>
+              <p class="text-slate-100 text-lg leading-relaxed">
+                Dual spring-loaded stainless-steel slides allow the shoulder yoke to lock securely into <strong class="text-white">Short (S), Medium (M), or Long (L)</strong> positions in seconds, even while wearing firefighting gloves.
+              </p>
+            </div>
+
+            <div class="p-6 rounded-2xl bg-white/5 border border-white/10">
+              <h3 class="text-2xl font-bold text-white mb-2">
+                Pivoting &amp; Sliding Waist Pad
+              </h3>
+              <p class="text-slate-100 text-lg leading-relaxed">
+                Mounted on a low-friction stainless-steel pivot and vertical slide mechanism, the waist belt articulates independently as the firefighter bends, twists, climbs ladders, or crawls.
+              </p>
+            </div>
+
+            <div class="p-6 rounded-2xl bg-white/5 border border-white/10">
+              <h3 class="text-2xl font-bold text-white mb-2">
+                Vulcanized Chloroprene &amp; Kevlar® Harness
+              </h3>
+              <p class="text-slate-100 text-lg leading-relaxed">
+                Compression-moulded vulcanized chloroprene rubber padding with flame-retardant <strong class="text-white">Kevlar® aramid webbing</strong> and high-visibility reflective trim resists chemical absorption and extreme radiant heat.
+              </p>
+            </div>
+
+            <div class="p-6 rounded-2xl bg-amber-500/15 border border-amber-400/40">
+              <h3 class="text-2xl font-bold text-white mb-2">
+                Balanced Piston Pressure Reducer &amp; 55 bar Whistle
+              </h3>
+              <p class="text-white text-lg leading-relaxed">
+                Steps 300 bar cylinder pressure down to a stable <strong class="font-bold">6.5 – 8.0 bar</strong> medium pressure (relief valve opens at &gt;11 bar) and triggers a <strong class="font-bold">&gt;90 dBA</strong> pneumatic warning whistle at <strong class="font-bold">55 ± 5 bar</strong>.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- STAGE 3 // 300 BAR CARBON CYLINDER & TELEMETRY SIM (./tank.glb)   -->
+    <!-- ================================================================= -->
+    <section id="stage-3" data-stage="3" class="min-h-screen flex items-center py-28 px-6 sm:px-12 lg:px-20 max-w-[1720px] mx-auto">
+      <div class="w-full grid grid-cols-1 xl:grid-cols-12 gap-8 pointer-events-auto">
+
+        <!-- Left Card: Cylinder Specifications (tank.glb) -->
+        <div class="xl:col-span-5 editorial-card rounded-3xl p-8 sm:p-10">
+          <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-amber-400/15 border border-amber-400/30 text-amber-300 text-base font-bold mb-5">
+            <span>Section 03 — Compressed Air Vessel (tank.glb)</span>
+          </div>
+
+          <h2 class="font-display text-4xl font-extrabold text-white tracking-tight leading-tight mb-5">
+            300 bar Carbon-Composite Cylinder
+          </h2>
+
+          <p class="text-white text-xl leading-relaxed mb-8">
+            Isolated in <strong class="font-bold">tank.glb</strong>, the seamless aluminum liner is fully overwrapped in carbon fiber and fiberglass filaments set in epoxy resin, delivering maximum air volume at minimal weight.
+          </p>
+
+          <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="p-5 rounded-2xl bg-white/5 border border-white/15">
+              <div class="text-3xl font-display font-extrabold text-white">
+                6.8 L
+              </div>
+              <div class="text-lg font-bold text-white mt-1">
+                2,040 L Free Air
+              </div>
+              <div class="text-base text-slate-300 mt-0.5">
+                ~1,836 L effective breathable air
+              </div>
+            </div>
+
+            <div class="p-5 rounded-2xl bg-white/5 border border-white/15">
+              <div class="text-3xl font-display font-extrabold text-white">
+                9.0 L
+              </div>
+              <div class="text-lg font-bold text-white mt-1">
+                2,700 L Free Air
+              </div>
+              <div class="text-base text-slate-300 mt-0.5">
+                Extended duration rescue option
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="p-5 rounded-2xl bg-white/5 border border-white/10">
+              <h3 class="text-xl font-bold text-white mb-1">
+                Right-Angle Valve &amp; Ratchet Handwheel
+              </h3>
+              <p class="text-slate-100 text-lg leading-relaxed">
+                Standard <strong class="text-white">G5/8&quot; EN 144-2</strong> thread connection with a recessed pressure gauge, burst-disc overpressure assembly, and anti-vibration ratchet handwheel to prevent accidental closure.
+              </p>
+            </div>
+
+            <div class="p-5 rounded-2xl bg-white/5 border border-white/10">
+              <h3 class="text-xl font-bold text-white mb-1">
+                EN 12021 Breathable Air Standard
+              </h3>
+              <p class="text-slate-100 text-lg leading-relaxed">
+                Filled with dry, oil-free compressed air (21% O₂) to a nominal working pressure of <strong class="text-white">300 bar</strong> (test pressure 450 bar).
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Card: Interactive Bodyguard 7000 & ADSU Telemetry Simulator -->
+        <div class="xl:col-span-7 xl:col-start-6 editorial-card rounded-3xl p-8 sm:p-10">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+            <div>
+              <div class="text-sky-300 text-base font-bold">Interactive Training Simulator</div>
+              <h3 class="font-display text-3xl sm:text-4xl font-extrabold text-white">
+                Bodyguard® 7000 Pressure &amp; TTW Calculator
+              </h3>
+            </div>
+            <span id="bg-status-pill" class="px-4 py-1.5 rounded-full text-base font-bold bg-emerald-500/20 border border-emerald-400/50 text-emerald-300">
+              System Nominal
+            </span>
+          </div>
+
+          <!-- Large White Digital Readouts -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+            <div class="p-5 rounded-2xl bg-black/50 border border-white/15">
+              <div class="text-base text-slate-300 font-semibold">Cylinder Pressure</div>
+              <div class="flex items-baseline gap-2 mt-1">
+                <span id="telemetry-bar" class="text-5xl font-display font-extrabold text-white">300</span>
+                <span class="text-xl text-slate-300 font-bold">bar</span>
+              </div>
+              <div id="whistle-indicator" class="text-sm text-slate-300 mt-2">
+                Whistle standby (55 ± 5 bar)
+              </div>
+            </div>
+
+            <div class="p-5 rounded-2xl bg-black/50 border border-white/15">
+              <div class="text-base text-slate-300 font-semibold">Time to Whistle (TTW)</div>
+              <div class="flex items-baseline gap-2 mt-1">
+                <span id="telemetry-ttw" class="text-5xl font-display font-extrabold text-white">37</span>
+                <span class="text-xl text-slate-300 font-bold">min</span>
+              </div>
+              <div class="text-sm text-slate-300 mt-2">
+                Remaining until 55 bar reserve
+              </div>
+            </div>
+
+            <div class="p-5 rounded-2xl bg-black/50 border border-white/15">
+              <div class="text-base text-slate-300 font-semibold">Effective Air Volume</div>
+              <div class="flex items-baseline gap-2 mt-1">
+                <span id="telemetry-liters" class="text-5xl font-display font-extrabold text-white">1836</span>
+                <span class="text-xl text-slate-300 font-bold">L</span>
+              </div>
+              <div class="text-sm text-slate-300 mt-2">
+                6.8 L Cylinder (Compressibility adj.)
+              </div>
+            </div>
+          </div>
+
+          <!-- Cylinder Pressure Slider -->
+          <div class="mb-7">
+            <div class="flex items-center justify-between mb-3">
+              <label for="slider-pressure" class="text-xl font-bold text-white">
+                Adjust Cylinder Pressure (0 – 300 bar)
+              </label>
+              <button id="btn-auto-breathe" class="px-5 py-2 rounded-full bg-sky-500/20 border border-sky-400/50 hover:bg-sky-500/30 text-white font-semibold text-base transition">
+                Start Breathing Sim
+              </button>
+            </div>
+            <input id="slider-pressure" type="range" min="0" max="300" value="300" class="w-full" />
+          </div>
+
+          <!-- Firefighter Work Rate Selector -->
+          <div class="mb-7">
+            <div class="text-xl font-bold text-white mb-3">
+              Firefighter Breathing Exertion Rate
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <button data-rate="20" class="rate-btn p-4 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 text-left transition">
+                <div class="text-2xl font-extrabold text-white">20 L/min</div>
+                <div class="text-base text-slate-300 mt-0.5">Rest / Standby</div>
+              </button>
+              <button data-rate="40" class="rate-btn p-4 rounded-2xl border-2 border-white bg-white/15 text-left transition">
+                <div class="text-2xl font-extrabold text-white">40 L/min</div>
+                <div class="text-base text-white mt-0.5">Standard Firefighting</div>
+              </button>
+              <button data-rate="85" class="rate-btn p-4 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 text-left transition">
+                <div class="text-2xl font-extrabold text-white">85 L/min</div>
+                <div class="text-base text-slate-300 mt-0.5">Heavy Rescue Exertion</div>
+              </button>
+            </div>
+          </div>
+
+          <!-- ADSU / PASS Distress Alarm Simulator -->
+          <div class="p-5 rounded-2xl bg-white/5 border border-white/15">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <h4 class="text-xl font-bold text-white">
+                ADSU / PASS Motion Distress Alarm (EN 137)
+              </h4>
+              <span id="adsu-timer-readout" class="text-base font-semibold text-slate-200">
+                Motion Sensor: Active (0s motionless)
+              </span>
+            </div>
+            <p class="text-slate-200 text-base leading-relaxed mb-4">
+              Removing the Tally Key arms the Automatic Distress Signal Unit: pre-alarm triggers after <strong class="text-white">25 seconds</strong> motionless; full alarm (<strong class="text-white">102–112 dBA</strong>) sounds after <strong class="text-white">33 seconds</strong>.
+            </p>
+            <div class="flex flex-wrap items-center gap-3">
+              <button id="btn-tally-key" class="px-5 py-2.5 rounded-full bg-white/10 border border-white/25 hover:bg-white/20 text-white font-semibold text-base transition">
+                Tally Key: Out (Armed)
+              </button>
+              <button id="btn-motion-sim" class="px-5 py-2.5 rounded-full bg-amber-500/20 border border-amber-400/50 hover:bg-amber-500/30 text-white font-semibold text-base transition">
+                Simulate Motionless Timer
+              </button>
+              <button id="btn-pass-alarm" class="px-5 py-2.5 rounded-full bg-red-600 hover:bg-red-500 text-white font-bold text-base transition shadow-lg">
+                Trigger Manual Panic Alarm
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- STAGE 4 // FPS 7000 FULL-FACE MASK, HUD & CHECKLIST (./mask.glb)  -->
+    <!-- ================================================================= -->
+    <section id="stage-4" data-stage="4" class="min-h-screen flex items-center py-28 px-6 sm:px-12 lg:px-20 max-w-[1720px] mx-auto">
+      <div class="w-full grid grid-cols-1 xl:grid-cols-12 gap-8 pointer-events-auto">
+
+        <!-- Left Column: FPS 7000 Mask, LDV & Wireless HUD (mask.glb) -->
+        <div class="xl:col-span-6 editorial-card rounded-3xl p-8 sm:p-10">
+          <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-emerald-400/15 border border-emerald-400/30 text-emerald-300 text-base font-bold mb-5">
+            <span>Section 04 — Facepiece, LDV &amp; HUD (mask.glb)</span>
+          </div>
+
+          <h2 class="font-display text-4xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight mb-5">
+            Dräger FPS® 7000 Mask &amp; Plus-Pressure LDV
+          </h2>
+
+          <p class="text-white text-xl leading-relaxed mb-7">
+            Displayed in <strong class="font-bold">mask.glb</strong>, the FPS® 7000 full-face mask maintains a continuous positive pressure of <strong class="font-bold">3.0 – 3.5 mbar</strong> inside the breathing cavity so toxic smoke cannot leak inward.
+          </p>
+
+          <div class="space-y-4 mb-7">
+            <div class="p-5 rounded-2xl bg-white/5 border border-white/10">
+              <h3 class="text-2xl font-bold text-white mb-1.5">
+                Plus-Pressure Lung Demand Valve (LDV)
+              </h3>
+              <p class="text-slate-100 text-lg leading-relaxed">
+                Engages automatically on the wearer’s first breath, supplying over <strong class="text-white">500 L/min</strong> peak airflow. Includes a front reset button to shut off positive pressure when doffing and a red bypass override button for supplementary air.
+              </p>
+            </div>
+
+            <div class="p-5 rounded-2xl bg-white/5 border border-white/10">
+              <h3 class="text-2xl font-bold text-white mb-1.5">
+                Class 1 Polycarbonate Visor &amp; Double-Reflex Seal
+              </h3>
+              <p class="text-slate-100 text-lg leading-relaxed">
+                Wide-angle distortion-free polycarbonate visor with anti-fog/anti-scratch coating, hypoallergenic EPDM or silicone double-reflex facial seal, and stainless-steel speech diaphragm.
+              </p>
+            </div>
+          </div>
+
+          <!-- Live Wireless HUD 4-LED Bar + Legend -->
+          <div class="p-6 rounded-2xl bg-black/55 border border-white/15">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xl font-bold text-white">FPS® 7000 Wireless HUD Live Status</span>
+              <span id="hud-pattern-text" class="text-base font-bold text-emerald-400">4 Green (75–100%)</span>
+            </div>
+            <div class="grid grid-cols-4 gap-3 mb-5">
+              <div id="hud-led-1" class="h-5 rounded-full bg-emerald-400 shadow-[0_0_15px_#10B981] transition-all"></div>
+              <div id="hud-led-2" class="h-5 rounded-full bg-emerald-400 shadow-[0_0_15px_#10B981] transition-all"></div>
+              <div id="hud-led-3" class="h-5 rounded-full bg-emerald-400 shadow-[0_0_15px_#10B981] transition-all"></div>
+              <div id="hud-led-4" class="h-5 rounded-full bg-emerald-400 shadow-[0_0_15px_#10B981] transition-all"></div>
+            </div>
+
+            <div class="space-y-2.5 text-lg font-medium">
+              <div class="flex items-center justify-between py-1.5 border-b border-white/10">
+                <span class="text-emerald-400 font-bold">● ● ● ● &nbsp;4 Green LEDs</span>
+                <span class="text-white font-semibold">225 – 300 bar (75 – 100%)</span>
+              </div>
+              <div class="flex items-center justify-between py-1.5 border-b border-white/10">
+                <span class="text-emerald-400 font-bold">● ● ● ○ &nbsp;3 Green LEDs</span>
+                <span class="text-white font-semibold">150 – 225 bar (50 – 75%)</span>
+              </div>
+              <div class="flex items-center justify-between py-1.5 border-b border-white/10">
+                <span class="text-amber-400 font-bold">● ● ○ ○ &nbsp;2 Yellow LEDs</span>
+                <span class="text-white font-semibold">75 – 150 bar (25 – 50%)</span>
+              </div>
+              <div class="flex items-center justify-between py-1.5 border-b border-white/10">
+                <span class="text-red-400 font-bold">● ○ ○ ○ &nbsp;1 Red LED</span>
+                <span class="text-white font-semibold">55 – 75 bar (&lt;25% Reserve)</span>
+              </div>
+              <div class="flex items-center justify-between pt-1.5">
+                <span class="text-red-500 font-bold">★ ○ ○ ○ &nbsp;Flashing Red + Whistle</span>
+                <span class="text-white font-semibold">&lt; 55 bar (Immediate Retreat)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: 6-Step Pre-Entry Verification Checklist -->
+        <div class="xl:col-span-6 editorial-card rounded-3xl p-8 sm:p-10 flex flex-col justify-between">
+          <div>
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <div>
+                <div class="text-emerald-400 text-base font-bold">Standard Operating Procedure</div>
+                <h3 class="font-display text-3xl sm:text-4xl font-extrabold text-white">
+                  6-Step Pre-Entry Verification
+                </h3>
+              </div>
+              <span id="checklist-score" class="px-4 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-lg font-bold">
+                0 / 6 Verified
+              </span>
+            </div>
+
+            <p class="text-white text-lg leading-relaxed mb-6">
+              Complete all six mandatory Dräger PSS® 7000 operational checks prior to donning and entry control registration:
+            </p>
+
+            <div id="checklist-container" class="space-y-3.5 mb-8">
+              <label class="flex items-start gap-4 p-4 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 cursor-pointer transition">
+                <input type="checkbox" class="ba-check mt-1.5 w-6 h-6 accent-sky-400 rounded cursor-pointer shrink-0" />
+                <div>
+                  <div class="text-white text-xl font-bold">1. Visual &amp; Harness Inspection</div>
+                  <div class="text-slate-200 text-base leading-relaxed mt-1">
+                    Inspect carbon backplate, extend shoulder &amp; waist straps fully, verify cylinder cam-lock strap is locked, and inspect FPS® 7000 visor and face seal.
+                  </div>
+                </div>
+              </label>
+
+              <label class="flex items-start gap-4 p-4 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 cursor-pointer transition">
+                <input type="checkbox" class="ba-check mt-1.5 w-6 h-6 accent-sky-400 rounded cursor-pointer shrink-0" />
+                <div>
+                  <div class="text-white text-xl font-bold">2. Bodyguard® 7000 Self-Test &amp; HUD Pairing</div>
+                  <div class="text-slate-200 text-base leading-relaxed mt-1">
+                    Remove Tally Key, verify battery capacity icon, confirm acoustic self-test sequence, and verify wireless pairing with the in-mask HUD.
+                  </div>
+                </div>
+              </label>
+
+              <label class="flex items-start gap-4 p-4 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 cursor-pointer transition">
+                <input type="checkbox" class="ba-check mt-1.5 w-6 h-6 accent-sky-400 rounded cursor-pointer shrink-0" />
+                <div>
+                  <div class="text-white text-xl font-bold">3. High-Pressure Leak Test (&lt;10 bar drop / 60s)</div>
+                  <div class="text-slate-200 text-base leading-relaxed mt-1">
+                    Press LDV reset button to close positive pressure, open cylinder valve slowly (verify ≥270 bar), close cylinder valve, and verify pressure drops &lt;10 bar in 1 minute.
+                  </div>
+                </div>
+              </label>
+
+              <label class="flex items-start gap-4 p-4 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 cursor-pointer transition">
+                <input type="checkbox" class="ba-check mt-1.5 w-6 h-6 accent-sky-400 rounded cursor-pointer shrink-0" />
+                <div>
+                  <div class="text-white text-xl font-bold">4. Pneumatic Warning Whistle Check (55 ± 5 bar)</div>
+                  <div class="text-slate-200 text-base leading-relaxed mt-1">
+                    Depress the red LDV bypass button gently to vent line pressure and verify the &gt;90 dBA pneumatic warning whistle activates between 60 and 50 bar.
+                  </div>
+                </div>
+              </label>
+
+              <label class="flex items-start gap-4 p-4 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 cursor-pointer transition">
+                <input type="checkbox" class="ba-check mt-1.5 w-6 h-6 accent-sky-400 rounded cursor-pointer shrink-0" />
+                <div>
+                  <div class="text-white text-xl font-bold">5. Positive-Pressure Mask Seal &amp; Bypass Verification</div>
+                  <div class="text-slate-200 text-base leading-relaxed mt-1">
+                    Open cylinder valve fully, don the FPS® 7000 mask, inhale sharply to engage positive pressure (3.0–3.5 mbar), hold breath to confirm zero audible leakage, and test bypass.
+                  </div>
+                </div>
+              </label>
+
+              <label class="flex items-start gap-4 p-4 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 cursor-pointer transition">
+                <input type="checkbox" class="ba-check mt-1.5 w-6 h-6 accent-sky-400 rounded cursor-pointer shrink-0" />
+                <div>
+                  <div class="text-white text-xl font-bold">6. Manual Distress Alarm Test &amp; Entry Control Tally</div>
+                  <div class="text-slate-200 text-base leading-relaxed mt-1">
+                    Press the manual panic button on the Bodyguard® 7000 to verify the 102–112 dBA alarm, reset with Tally Key, and hand Tally to Entry Control Officer.
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-white/15 flex flex-wrap items-center justify-between gap-4">
+            <button id="btn-export-cert" class="px-7 py-4 rounded-full bg-white text-black font-bold text-lg hover:bg-slate-200 transition shadow-lg">
+              Copy Training Sign-Off Record
+            </button>
+            <button onclick="window.scrollToStage(0)" class="px-6 py-4 rounded-full bg-white/10 hover:bg-white/20 text-white font-semibold text-base transition">
+              Back to Top ↑
+            </button>
+          </div>
+
+          <div id="cert-toast" class="hidden mt-4 p-4 rounded-2xl bg-emerald-500/20 border border-emerald-400 text-white font-semibold text-lg text-center">
+            ✓ Training verification record copied to clipboard
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL: LOCAL PROJECT DIRECTORY LOADER (STRICTLY THE 5 LOCAL FILES)    -->
+  <!-- ===================================================================== -->
+  <div id="asset-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-md p-6">
+    <div class="editorial-card rounded-3xl max-w-2xl w-full p-8 sm:p-10">
+      <div class="flex items-center justify-between border-b border-white/15 pb-5 mb-6">
+        <div>
+          <div class="text-sky-300 text-sm font-bold uppercase tracking-wider">Project Directory Files</div>
+          <h3 class="font-display text-3xl font-extrabold text-white mt-1">
+            unit.glb, body.glb, tank.glb, mask.glb &amp; intro.mp4
+          </h3>
+        </div>
+        <button id="btn-close-loader" class="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white font-semibold text-sm transition">
+          Close
+        </button>
+      </div>
+
+      <p class="text-lg text-slate-200 leading-relaxed mb-6">
+        This application strictly loads <strong class="text-white">./unit.glb</strong>, <strong class="text-white">./body.glb</strong>, <strong class="text-white">./tank.glb</strong>, <strong class="text-white">./mask.glb</strong>, and <strong class="text-white">./intro.mp4</strong> from the same directory as <code class="text-sky-300">index.html</code>. If you are previewing inside a sandboxed browser tab, select or drop those 5 files below to mount them directly from disk:
+      </p>
+
+      <!-- File / Folder Dropzone -->
+      <label id="dropzone" class="flex flex-col items-center justify-center border-2 border-dashed border-white/30 hover:border-sky-400 rounded-2xl p-8 bg-white/5 cursor-pointer transition text-center mb-6">
+        <input id="file-input" type="file" multiple accept=".glb,.gltf,.mp4,.webm" class="hidden" />
+        <div class="text-xl text-white font-bold mb-2">
+          Select or Drop body.glb, mask.glb, tank.glb, unit.glb &amp; intro.mp4
+        </div>
+        <div class="text-base text-slate-300">
+          Zero procedural geometry is used — only your exact GLB and MP4 files are rendered
+        </div>
+      </label>
+
+      <!-- Live Asset Mount Status -->
+      <div class="space-y-3 bg-black/45 p-5 rounded-2xl border border-white/10 text-base">
+        <div class="flex justify-between items-center">
+          <span class="text-white font-semibold">./unit.glb (Complete SCBA Unit)</span>
+          <span id="modal-status-unit" class="text-slate-300 font-medium">Loading ./unit.glb...</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-white font-semibold">./body.glb (Carbon Backplate &amp; Harness)</span>
+          <span id="modal-status-body" class="text-slate-300 font-medium">Loading ./body.glb...</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-white font-semibold">./tank.glb (300 Bar Carbon Cylinder)</span>
+          <span id="modal-status-tank" class="text-slate-300 font-medium">Loading ./tank.glb...</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-white font-semibold">./mask.glb (FPS 7000 Full-Face Mask)</span>
+          <span id="modal-status-mask" class="text-slate-300 font-medium">Loading ./mask.glb...</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-white font-semibold">./intro.mp4 (Hero Background Video)</span>
+          <span id="modal-status-intro" class="text-slate-300 font-medium">Loading ./intro.mp4...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- THREE.JS ENGINE — STRICTLY LOADS ONLY unit/body/tank/mask.glb         -->
+  <!-- ===================================================================== -->
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+    import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+    // -------------------------------------------------------------------------
+    // 1. WEBGL SCENE, CAMERA, STUDIO ENVIRONMENT & ORBIT CONTROLS
+    // -------------------------------------------------------------------------
+    const canvas = document.getElementById('three-canvas');
+    const scene = new THREE.Scene();
+
+    const camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.05, 100);
+    camera.position.set(0.55, 0.25, 3.1);
+
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: true,
+      alpha: true,
+      powerPreference: 'high-performance'
+    });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.25;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+    // Physically based studio reflections for realistic PBR GLB materials
+    const pmremGenerator = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.06;
+    controls.enableZoom = true;
+    controls.minDistance = 1.1;
+    controls.maxDistance = 6.5;
+    controls.target.set(-0.42, 0.0, 0);
+
+    // Supplemental Rim & Key Lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+    scene.add(ambientLight);
+
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.2);
+    keyLight.position.set(4, 6, 5);
+    scene.add(keyLight);
+
+    const rimLight = new THREE.DirectionalLight(0x38bdf8, 1.4);
+    rimLight.position.set(-5, 3, -4);
+    scene.add(rimLight);
+
+    // -------------------------------------------------------------------------
+    // 2. STRICT 4-MODEL CONTAINERS (NO PROCEDURAL GEOMETRY WHATSOEVER)
+    // -------------------------------------------------------------------------
+    const scbaRoot = new THREE.Group();
+    scene.add(scbaRoot);
+
+    const modelKeys = ['unit', 'body', 'tank', 'mask'];
+    const groups = {
+      unit: new THREE.Group(),
+      body: new THREE.Group(),
+      tank: new THREE.Group(),
+      mask: new THREE.Group()
+    };
+
+    modelKeys.forEach((key) => {
+      groups[key].visible = key === 'unit';
+      scbaRoot.add(groups[key]);
+    });
+
+    // Configure GLTFLoader + DRACOLoader for compressed or uncompressed GLBs
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+
+    const gltfLoader = new GLTFLoader();
+    gltfLoader.setDRACOLoader(dracoLoader);
+
+    const loadedStatus = {
+      unit: false,
+      body: false,
+      tank: false,
+      mask: false
+    };
+
+    let activeModelKey = 'unit';
+    let autoRotate = true;
+
+    const viewportActiveLabel = document.getElementById('viewport-active-label');
+    const viewportStatusDot = document.getElementById('viewport-status-dot');
+
+    function updateStatusUI(key, isLoaded, errorMsg = null) {
+      const modalEl = document.getElementById(`modal-status-${key}`);
+      if (modalEl) {
+        if (isLoaded) {
+          modalEl.textContent = `${key}.glb Mounted ✓`;
+          modalEl.className = 'text-emerald-400 font-bold';
+        } else if (errorMsg) {
+          modalEl.textContent = errorMsg;
+          modalEl.className = 'text-amber-300 font-medium';
+        }
+      }
+      if (key === activeModelKey) {
+        viewportActiveLabel.textContent = `Active Model: ${key}.glb`;
+        viewportStatusDot.className = isLoaded
+          ? 'w-2.5 h-2.5 rounded-full bg-emerald-400'
+          : 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse';
+      }
+    }
+
+    // Auto-center and normalize scale of any loaded GLB model using Box3
+    function mountGLTFModel(key, gltfScene) {
+      while (groups[key].children.length > 0) {
+        groups[key].remove(groups[key].children[0]);
+      }
+
+      gltfScene.updateMatrixWorld(true);
+      const box = new THREE.Box3().setFromObject(gltfScene);
+      const size = box.getSize(new THREE.Vector3());
+      const center = box.getCenter(new THREE.Vector3());
+      const maxDim = Math.max(size.x, size.y, size.z) || 1;
+
+      // Normalize every GLB to a consistent studio height in the viewport
+      const targetDimension = key === 'mask' ? 1.35 : key === 'tank' ? 1.75 : 1.9;
+      const scaleFactor = targetDimension / maxDim;
+
+      const wrapper = new THREE.Group();
+      gltfScene.position.set(-center.x, -center.y, -center.z);
+      wrapper.add(gltfScene);
+      wrapper.scale.setScalar(scaleFactor);
+
+      groups[key].add(wrapper);
+      loadedStatus[key] = true;
+      updateStatusUI(key, true);
+    }
+
+    // Load strictly ./unit.glb, ./body.glb, ./tank.glb, ./mask.glb from relative directory
+    modelKeys.forEach((key) => {
+      gltfLoader.load(
+        `./${key}.glb`,
+        (gltf) => {
+          mountGLTFModel(key, gltf.scene);
+        },
+        undefined,
+        () => {
+          updateStatusUI(key, false, `Select ${key}.glb from local folder`);
+        }
+      );
+    });
+
+    // Track ./intro.mp4 status
+    const introVideo = document.getElementById('intro-video');
+    introVideo.addEventListener('loadeddata', () => {
+      const modalIntro = document.getElementById('modal-status-intro');
+      if (modalIntro) {
+        modalIntro.textContent = 'intro.mp4 Active ✓';
+        modalIntro.className = 'text-emerald-400 font-bold';
+      }
+    });
+    introVideo.addEventListener('error', () => {
+      const modalIntro = document.getElementById('modal-status-intro');
+      if (modalIntro) {
+        modalIntro.textContent = 'Select intro.mp4 from local folder';
+        modalIntro.className = 'text-amber-300 font-medium';
+      }
+    });
+
+    // Local Disk File Picker & Drag-and-Drop Handler (Strictly matches unit/body/tank/mask/intro)
+    function handleLocalFiles(fileList) {
+      Array.from(fileList).forEach((file) => {
+        const name = file.name.toLowerCase();
+        const objectUrl = URL.createObjectURL(file);
+
+        if (name === 'intro.mp4' || name.includes('intro') || name.endsWith('.mp4')) {
+          introVideo.src = objectUrl;
+          introVideo.play().catch(() => {});
+          const modalIntro = document.getElementById('modal-status-intro');
+          if (modalIntro) {
+            modalIntro.textContent = 'intro.mp4 Mounted ✓';
+            modalIntro.className = 'text-emerald-400 font-bold';
+          }
+          return;
+        }
+
+        modelKeys.forEach((key) => {
+          if (name === `${key}.glb` || name.includes(key)) {
+            gltfLoader.load(objectUrl, (gltf) => {
+              mountGLTFModel(key, gltf.scene);
+            });
+          }
+        });
+      });
+    }
+
+    // Also allow dropping files anywhere onto the window for instant mounting
+    window.addEventListener('dragover', (e) => e.preventDefault());
+    window.addEventListener('drop', (e) => {
+      e.preventDefault();
+      if (e.dataTransfer && e.dataTransfer.files.length > 0) {
+        handleLocalFiles(e.dataTransfer.files);
+      }
+    });
+
+    const fileInput = document.getElementById('file-input');
+    const dropzone = document.getElementById('dropzone');
+    fileInput.addEventListener('change', (e) => handleLocalFiles(e.target.files));
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.classList.add('border-sky-400', 'bg-white/10');
+    });
+    dropzone.addEventListener('dragleave', () => {
+      dropzone.classList.remove('border-sky-400', 'bg-white/10');
+    });
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('border-sky-400', 'bg-white/10');
+      if (e.dataTransfer.files.length) handleLocalFiles(e.dataTransfer.files);
+    });
+
+    const assetModal = document.getElementById('asset-modal');
+    document.getElementById('btn-open-loader').addEventListener('click', () => {
+      assetModal.classList.remove('hidden');
+      assetModal.classList.add('flex');
+    });
+    document.getElementById('btn-close-loader').addEventListener('click', () => {
+      assetModal.classList.add('hidden');
+      assetModal.classList.remove('flex');
+    });
+
+    // -------------------------------------------------------------------------
+    // 3. SCROLLYTELLING STAGES & MODEL ISOLATION (unit / body / tank / mask)
+    // -------------------------------------------------------------------------
+    let activeStage = 0;
+
+    // Camera keyframes framed so the 3D model sits cleanly in the right-hand space
+    // and centres when viewing dual-column interactive sections
+    const stageKeyframes = [
+      // Stage 0: Hero Intro (intro.mp4 + unit.glb)
+      {
+        model: 'unit',
+        camPos: new THREE.Vector3(0.55, 0.2, 3.0),
+        lookAt: new THREE.Vector3(-0.55, 0.0, 0),
+        rotY: -0.4,
+        videoOpacity: 0.58
+      },
+      // Stage 1: Section 01 — Complete System Architecture (unit.glb)
+      {
+        model: 'unit',
+        camPos: new THREE.Vector3(0.45, 0.15, 2.75),
+        lookAt: new THREE.Vector3(-0.55, 0.0, 0),
+        rotY: 0.35,
+        videoOpacity: 0.12
+      },
+      // Stage 2: Section 02 — Backplate & Harness (body.glb)
+      {
+        model: 'body',
+        camPos: new THREE.Vector3(0.4, 0.12, 2.65),
+        lookAt: new THREE.Vector3(-0.55, 0.0, 0),
+        rotY: 0.65,
+        videoOpacity: 0.08
+      },
+      // Stage 3: Section 03 — 300 Bar Carbon Cylinder (tank.glb)
+      {
+        model: 'tank',
+        camPos: new THREE.Vector3(0.0, 0.1, 2.85),
+        lookAt: new THREE.Vector3(0.0, 0.0, 0),
+        rotY: 0.25,
+        videoOpacity: 0.08
+      },
+      // Stage 4: Section 04 — FPS 7000 Full-Face Mask (mask.glb)
+      {
+        model: 'mask',
+        camPos: new THREE.Vector3(0.0, 0.08, 2.45),
+        lookAt: new THREE.Vector3(0.0, 0.0, 0),
+        rotY: -0.25,
+        videoOpacity: 0.08
+      }
+    ];
+
+    const targetCamPos = stageKeyframes[0].camPos.clone();
+    const targetLookAt = stageKeyframes[0].lookAt.clone();
+    let targetRotY = stageKeyframes[0].rotY;
+
+    function updateModelPills(selectedKey) {
+      modelKeys.forEach((k) => {
+        const btn = document.getElementById(`pill-${k}`);
+        if (!btn) return;
+        if (k === selectedKey) {
+          btn.className = 'model-pill px-4 py-2 rounded-full text-sm sm:text-base font-bold bg-white text-black transition whitespace-nowrap';
+        } else {
+          btn.className = 'model-pill px-4 py-2 rounded-full text-sm sm:text-base font-semibold text-white hover:bg-white/10 transition whitespace-nowrap';
+        }
+      });
+    }
+
+    // Isolate a single GLB model in the 3D scene
+    window.selectModel = (modelKey) => {
+      if (!groups[modelKey]) return;
+      activeModelKey = modelKey;
+      modelKeys.forEach((k) => {
+        groups[k].visible = k === modelKey;
+      });
+      updateModelPills(modelKey);
+      updateStatusUI(modelKey, loadedStatus[modelKey]);
+    };
+
+    function setStage(index) {
+      activeStage = Math.max(0, Math.min(stageKeyframes.length - 1, index));
+      const kf = stageKeyframes[activeStage];
+
+      targetCamPos.copy(kf.camPos);
+      targetLookAt.copy(kf.lookAt);
+      targetRotY = kf.rotY;
+
+      introVideo.style.opacity = kf.videoOpacity;
+      window.selectModel(kf.model);
+
+      document.querySelectorAll('.nav-link').forEach((btn) => {
+        const idx = Number(btn.getAttribute('data-nav'));
+        if (idx === activeStage) {
+          btn.className = 'nav-link px-4 py-2 rounded-full text-white bg-white/15 transition';
+        } else {
+          btn.className = 'nav-link px-4 py-2 rounded-full text-slate-300 hover:text-white hover:bg-white/10 transition';
+        }
+      });
+    }
+
+    window.scrollToStage = (idx) => {
+      const el = document.getElementById(`stage-${idx}`);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    window.addEventListener('scroll', () => {
+      const sections = document.querySelectorAll('section[data-stage]');
+      let bestStage = 0;
+      let minDelta = Infinity;
+      sections.forEach((sec) => {
+        const rect = sec.getBoundingClientRect();
+        const delta = Math.abs(rect.top - window.innerHeight * 0.28);
+        if (delta < minDelta) {
+          minDelta = delta;
+          bestStage = Number(sec.getAttribute('data-stage'));
+        }
+      });
+      if (bestStage !== activeStage) {
+        setStage(bestStage);
+      }
+    });
+
+    // Auto-Rotate & Reset View Controls
+    const btnAutoRotate = document.getElementById('btn-autorotate');
+    btnAutoRotate.addEventListener('click', () => {
+      autoRotate = !autoRotate;
+      btnAutoRotate.textContent = autoRotate ? 'Auto-Rotate: On' : 'Auto-Rotate: Off';
+      btnAutoRotate.classList.toggle('text-sky-300', autoRotate);
+      btnAutoRotate.classList.toggle('bg-sky-400/15', autoRotate);
+      btnAutoRotate.classList.toggle('text-slate-300', !autoRotate);
+    });
+
+    document.getElementById('btn-reset-cam').addEventListener('click', () => {
+      const kf = stageKeyframes[activeStage];
+      targetCamPos.copy(kf.camPos);
+      targetLookAt.copy(kf.lookAt);
+      scbaRoot.rotation.set(0, kf.rotY, 0);
+    });
+
+    // -------------------------------------------------------------------------
+    // 4. BODYGUARD® 7000, WIRELESS HUD & ADSU DISTRESS ALARM SIMULATOR
+    // -------------------------------------------------------------------------
+    let cylinderPressureBar = 300;
+    let breathingRateLpm = 40;
+    let autoBreatheActive = false;
+    let passAlarmActive = false;
+    let tallyInserted = false;
+    let motionlessSimActive = false;
+    let motionlessSeconds = 0;
+    let audioCtx = null;
+
+    const sliderPressure = document.getElementById('slider-pressure');
+    const telemetryBar = document.getElementById('telemetry-bar');
+    const telemetryTtw = document.getElementById('telemetry-ttw');
+    const telemetryLiters = document.getElementById('telemetry-liters');
+    const bgStatusPill = document.getElementById('bg-status-pill');
+    const whistleIndicator = document.getElementById('whistle-indicator');
+    const hudPatternText = document.getElementById('hud-pattern-text');
+    const adsuTimerReadout = document.getElementById('adsu-timer-readout');
+    const led1 = document.getElementById('hud-led-1');
+    const led2 = document.getElementById('hud-led-2');
+    const led3 = document.getElementById('hud-led-3');
+    const led4 = document.getElementById('hud-led-4');
+
+    function playTelemetryTone(freq = 2600, durationMs = 150, type = 'square') {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + durationMs / 1000);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + durationMs / 1000);
+      } catch (_) {}
+    }
+
+    function updateBodyguardTelemetry() {
+      const bar = Math.round(cylinderPressureBar);
+      const effectiveLitres = Math.round((bar / 300) * 1836);
+      const usableBar = Math.max(0, bar - 55);
+      const usableEffectiveLitres = (usableBar / 300) * 1836;
+      const ttwMinutes = Math.round(usableEffectiveLitres / breathingRateLpm);
+
+      telemetryBar.textContent = bar;
+      telemetryLiters.textContent = effectiveLitres;
+      telemetryTtw.textContent = ttwMinutes;
+
+      if (bar <= 55 && bar > 0) {
+        whistleIndicator.textContent = '⚠ Whistle Active (>90 dBA @ 55 ± 5 bar)';
+        whistleIndicator.className = 'text-sm text-red-400 font-bold animate-pulse mt-2';
+      } else {
+        whistleIndicator.textContent = 'Whistle standby (55 ± 5 bar)';
+        whistleIndicator.className = 'text-sm text-slate-300 mt-2';
+      }
+
+      const offClass = 'h-5 rounded-full bg-white/10 border border-white/15 transition-all';
+      led1.className = offClass;
+      led2.className = offClass;
+      led3.className = offClass;
+      led4.className = offClass;
+
+      if (bar > 225) {
+        [led1, led2, led3, led4].forEach((l) => {
+          l.className = 'h-5 rounded-full bg-emerald-400 shadow-[0_0_15px_#10B981] transition-all';
+        });
+        hudPatternText.textContent = '4 Green (75–100%)';
+        hudPatternText.className = 'text-base font-bold text-emerald-400';
+      } else if (bar > 150) {
+        [led1, led2, led3].forEach((l) => {
+          l.className = 'h-5 rounded-full bg-emerald-400 shadow-[0_0_15px_#10B981] transition-all';
+        });
+        hudPatternText.textContent = '3 Green (50–75%)';
+        hudPatternText.className = 'text-base font-bold text-emerald-400';
+      } else if (bar > 75) {
+        [led1, led2].forEach((l) => {
+          l.className = 'h-5 rounded-full bg-amber-400 shadow-[0_0_15px_#F59E0B] transition-all';
+        });
+        hudPatternText.textContent = '2 Yellow (25–50%)';
+        hudPatternText.className = 'text-base font-bold text-amber-400';
+      } else if (bar >= 55) {
+        led1.className = 'h-5 rounded-full bg-red-500 shadow-[0_0_15px_#EF4444] transition-all';
+        hudPatternText.textContent = '1 Red (<25% Reserve)';
+        hudPatternText.className = 'text-base font-bold text-red-400';
+      } else {
+        led1.className = 'h-5 rounded-full bg-red-500 shadow-[0_0_18px_#EF4444] led-blink';
+        hudPatternText.textContent = 'Flashing Red + Whistle (<55 bar)';
+        hudPatternText.className = 'text-base font-bold text-red-500';
+      }
+
+      if (passAlarmActive) {
+        bgStatusPill.textContent = 'Full Alarm (102–112 dBA)';
+        bgStatusPill.className = 'px-4 py-1.5 rounded-full text-base font-bold bg-red-600 text-white animate-pulse';
+      } else if (motionlessSeconds >= 25) {
+        bgStatusPill.textContent = 'ADSU Pre-Alarm (25s)';
+        bgStatusPill.className = 'px-4 py-1.5 rounded-full text-base font-bold bg-amber-500 text-black animate-pulse';
+      } else if (bar < 55) {
+        bgStatusPill.textContent = 'Whistle Active (<55 bar)';
+        bgStatusPill.className = 'px-4 py-1.5 rounded-full text-base font-bold bg-red-500/25 border border-red-500 text-red-300';
+      } else {
+        bgStatusPill.textContent = 'System Nominal';
+        bgStatusPill.className = 'px-4 py-1.5 rounded-full text-base font-bold bg-emerald-500/20 border border-emerald-400/50 text-emerald-300';
+      }
+    }
+
+    sliderPressure.addEventListener('input', (e) => {
+      cylinderPressureBar = Number(e.target.value);
+      updateBodyguardTelemetry();
+    });
+
+    document.querySelectorAll('.rate-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        breathingRateLpm = Number(btn.getAttribute('data-rate'));
+        document.querySelectorAll('.rate-btn').forEach((b) => {
+          b.className = 'rate-btn p-4 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 text-left transition';
+        });
+        btn.className = 'rate-btn p-4 rounded-2xl border-2 border-white bg-white/15 text-left transition';
+        updateBodyguardTelemetry();
+      });
+    });
+
+    const btnAutoBreathe = document.getElementById('btn-auto-breathe');
+    btnAutoBreathe.addEventListener('click', () => {
+      autoBreatheActive = !autoBreatheActive;
+      btnAutoBreathe.textContent = autoBreatheActive ? 'Pause Breathing Sim' : 'Start Breathing Sim';
+      btnAutoBreathe.classList.toggle('bg-emerald-500', autoBreatheActive);
+      btnAutoBreathe.classList.toggle('text-black', autoBreatheActive);
+    });
+
+    const btnTallyKey = document.getElementById('btn-tally-key');
+    btnTallyKey.addEventListener('click', () => {
+      tallyInserted = !tallyInserted;
+      if (tallyInserted) {
+        motionlessSimActive = false;
+        motionlessSeconds = 0;
+        passAlarmActive = false;
+        document.body.classList.remove('pass-alarm-active');
+        btnTallyKey.textContent = 'Tally Key: Inserted (Standby)';
+        adsuTimerReadout.textContent = 'Motion Sensor: Standby (Tally Inserted)';
+      } else {
+        btnTallyKey.textContent = 'Tally Key: Out (Armed)';
+        adsuTimerReadout.textContent = 'Motion Sensor: Active (0s motionless)';
+      }
+      updateBodyguardTelemetry();
+    });
+
+    const btnMotionSim = document.getElementById('btn-motion-sim');
+    btnMotionSim.addEventListener('click', () => {
+      if (tallyInserted) {
+        tallyInserted = false;
+        btnTallyKey.textContent = 'Tally Key: Out (Armed)';
+      }
+      motionlessSimActive = !motionlessSimActive;
+      if (!motionlessSimActive) {
+        motionlessSeconds = 0;
+        adsuTimerReadout.textContent = 'Motion Sensor: Active (0s motionless)';
+        btnMotionSim.textContent = 'Simulate Motionless Timer';
+      } else {
+        motionlessSeconds = 22;
+        btnMotionSim.textContent = 'Reset Motion Sensor';
+      }
+      updateBodyguardTelemetry();
+    });
+
+    const btnPassAlarm = document.getElementById('btn-pass-alarm');
+    const btnPassHeader = document.getElementById('btn-pass-header');
+
+    function toggleManualPassAlarm() {
+      passAlarmActive = !passAlarmActive;
+      document.body.classList.toggle('pass-alarm-active', passAlarmActive);
+      btnPassAlarm.textContent = passAlarmActive ? 'Silence PASS Alarm' : 'Trigger Manual Panic Alarm';
+      if (passAlarmActive) playTelemetryTone(2850, 220, 'sawtooth');
+      updateBodyguardTelemetry();
+    }
+
+    btnPassAlarm.addEventListener('click', toggleManualPassAlarm);
+    btnPassHeader.addEventListener('click', toggleManualPassAlarm);
+
+    setInterval(() => {
+      if (autoBreatheActive && cylinderPressureBar > 0) {
+        cylinderPressureBar = Math.max(0, cylinderPressureBar - breathingRateLpm / 20);
+        sliderPressure.value = Math.round(cylinderPressureBar);
+        updateBodyguardTelemetry();
+      }
+
+      if (motionlessSimActive && !tallyInserted) {
+        motionlessSeconds += 1;
+        adsuTimerReadout.textContent = `Motion Sensor: ${motionlessSeconds}s motionless`;
+        if (motionlessSeconds >= 33) {
+          passAlarmActive = true;
+          document.body.classList.add('pass-alarm-active');
+          btnPassAlarm.textContent = 'Silence PASS Alarm';
+        } else if (motionlessSeconds >= 25) {
+          playTelemetryTone(2500, 120, 'triangle');
+        }
+        updateBodyguardTelemetry();
+      }
+
+      if (passAlarmActive) {
+        playTelemetryTone(2900, 140, 'sawtooth');
+        setTimeout(() => playTelemetryTone(2200, 140, 'sawtooth'), 170);
+      } else if (cylinderPressureBar > 0 && cylinderPressureBar <= 55 && autoBreatheActive) {
+        playTelemetryTone(3100, 90, 'sine');
+      }
+    }, 1000);
+
+    // -------------------------------------------------------------------------
+    // 5. PRE-ENTRY CHECKLIST & RECORD SIGN-OFF
+    // -------------------------------------------------------------------------
+    const checkInputs = document.querySelectorAll('.ba-check');
+    const scoreBadge = document.getElementById('checklist-score');
+
+    checkInputs.forEach((chk) => {
+      chk.addEventListener('change', () => {
+        const completed = Array.from(checkInputs).filter((c) => c.checked).length;
+        scoreBadge.textContent = `${completed} / 6 Verified`;
+      });
+    });
+
+    document.getElementById('btn-export-cert').addEventListener('click', () => {
+      const completed = Array.from(checkInputs).filter((c) => c.checked).length;
+      const logText = [
+        'Dräger PSS® 7000 — Firefighter Breathing Apparatus Pre-Entry Verification',
+        `Timestamp: ${new Date().toISOString()}`,
+        `Standard: EN 137 Type 2 (300 bar / ~11.9 kg Nominal)`,
+        `Pre-Entry Steps Verified: ${completed} / 6`,
+        `Cylinder Pressure Tested: ${Math.round(cylinderPressureBar)} bar`
+      ].join('\n');
+
+      const textarea = document.createElement('textarea');
+      textarea.value = logText;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+
+      const toast = document.getElementById('cert-toast');
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3500);
+    });
+
+    // -------------------------------------------------------------------------
+    // 6. RENDER LOOP
+    // -------------------------------------------------------------------------
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const delta = clock.getDelta();
+      const elapsed = clock.getElapsedTime();
+
+      camera.position.lerp(targetCamPos, 0.05);
+      controls.target.lerp(targetLookAt, 0.05);
+
+      if (autoRotate) {
+        scbaRoot.rotation.y += delta * 0.32;
+      } else {
+        scbaRoot.rotation.y = THREE.MathUtils.lerp(scbaRoot.rotation.y, targetRotY, 0.06);
+      }
+
+      scbaRoot.position.y = Math.sin(elapsed * 1.1) * 0.015;
+
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    window.onload = () => {
+      setStage(0);
+      updateBodyguardTelemetry();
+      animate();
+    };
+  </script>
+</body>
+</html>
