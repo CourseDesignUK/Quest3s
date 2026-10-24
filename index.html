@@ -62,6 +62,7 @@
       <button id="btn-autorotate" class="px-4 py-2 rounded-full font-semibold text-sky-300 bg-sky-400/15 border border-sky-400/30 whitespace-nowrap">Auto-rotate: on</button>
       <button id="btn-reset-cam" class="px-4 py-2 rounded-full font-semibold text-slate-200 hover:bg-white/10 whitespace-nowrap">Reset view</button>
       <button id="btn-calib" class="px-4 py-2 rounded-full font-semibold text-slate-200 hover:bg-white/10 whitespace-nowrap">Calibrate: off</button>
+      <button id="btn-hs-clear" class="px-4 py-2 rounded-full font-semibold text-slate-200 hover:bg-white/10 whitespace-nowrap">Clear saved</button>
     </div>
   </div>
 
@@ -194,7 +195,7 @@
     import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
     // ---------- Content ----------
-    const CAM = { m: ['camera'], p: [0.3, 0.05, 0.5] };
+    const CAM = { k: 'cameras', m: ['camera'], p: [0.3, 0.05, 0.5] };
     // m = keywords matched against mesh/material names in your GLB; p = fallback position as a fraction of the model's bounding box [x, y, z]
     // (x: + is the headset's left side, y: + is up, z: + is the front). Use "Calibrate" to find better values.
     const buttons = {
@@ -451,6 +452,8 @@
       g.strokeStyle = '#fff'; g.lineWidth = 5; g.beginPath(); g.arc(64, 64, 26, 0, Math.PI * 2); g.stroke();
       const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
     }
+    let overrides = {};
+    try { overrides = JSON.parse(localStorage.getItem('quest-hotspots') || '{}'); } catch (_) {}
     const marker = new THREE.Sprite(new THREE.SpriteMaterial({ map: makeGlow(), depthTest: false, transparent: true }));
     marker.renderOrder = 999; marker.visible = false;
     root.add(marker);
@@ -472,7 +475,9 @@
     function focusFeature(item) {
       clearHighlight();
       let local = null;
-      const hits = item.m ? meshes.filter(m => item.m.some(k => meshText(m).includes(k))) : [];
+      const ov = overrides[item.k || item.n];
+      const pp = ov ? ov.p : item.p;
+      const hits = !ov && item.m ? meshes.filter(m => item.m.some(k => meshText(m).includes(k))) : [];
       if (hits.length) {
         const ry = root.rotation.y, py = root.position.y;
         root.rotation.y = 0; root.position.y = 0; root.updateMatrixWorld(true);
@@ -481,8 +486,8 @@
         local = root.worldToLocal(box.getCenter(new THREE.Vector3()));
         root.rotation.y = ry; root.position.y = py; root.updateMatrixWorld(true);
         hits.forEach(highlightMesh);
-      } else if (item.p && modelSize) {
-        local = new THREE.Vector3(item.p[0] * modelSize.x, item.p[1] * modelSize.y, item.p[2] * modelSize.z);
+      } else if (pp && modelSize) {
+        local = new THREE.Vector3(pp[0] * modelSize.x, pp[1] * modelSize.y, pp[2] * modelSize.z);
       }
       if (!local) { clearFocus(); return; }
       marker.position.copy(local); marker.visible = true; focus = true;
@@ -506,7 +511,7 @@
       btnCal.classList.toggle('text-sky-300', calibrate);
       if (calibrate && autoRotate) btnRot.click();
       toast.classList.toggle('hidden', !calibrate);
-      toast.textContent = 'Click a spot on the model';
+      toast.textContent = 'Pick an item, then click its real spot on the model';
     };
     const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
     let downAt = null;
@@ -519,12 +524,24 @@
       const hit = ray.intersectObject(root, true).find(h => h.object !== marker);
       if (!hit) return;
       const l = root.worldToLocal(hit.point.clone());
-      const f = v => v.toFixed(2);
-      const txt = 'p: [' + f(l.x / modelSize.x) + ', ' + f(l.y / modelSize.y) + ', ' + f(l.z / modelSize.z) + ']' + (hit.object.name ? '  mesh: "' + hit.object.name + '"' : '');
+      const f = v => +v.toFixed(3);
+      const p = [f(l.x / modelSize.x), f(l.y / modelSize.y), f(l.z / modelSize.z)];
       marker.position.copy(l); marker.visible = true;
-      toast.textContent = txt;
-      try { navigator.clipboard.writeText(txt); } catch (_) {}
+      if (group === 'controller') { toast.textContent = 'Switch to the Headset or Hand tab first'; return; }
+      const item = buttons[group][selected];
+      overrides[item.k || item.n] = { p };
+      const json = JSON.stringify(overrides);
+      try { localStorage.setItem('quest-hotspots', json); } catch (_) {}
+      try { navigator.clipboard.writeText(json); } catch (_) {}
+      toast.textContent = 'Saved "' + item.n + '" at [' + p.join(', ') + '] (all hotspots copied)';
+      applyFocus();
     });
+
+    document.getElementById('btn-hs-clear').onclick = () => {
+      overrides = {};
+      try { localStorage.removeItem('quest-hotspots'); } catch (_) {}
+      applyFocus();
+    };
 
     function setStage(i) {
       activeStage = i;
