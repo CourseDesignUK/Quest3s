@@ -8,11 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
-  <script type="importmap">
-    { "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
-  </script>
+  <!-- Import model-viewer component -->
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
   <script>
     tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter','sans-serif'], display: ['Plus Jakarta Sans','sans-serif'] } } } }
   </script>
@@ -20,12 +17,97 @@
     * { box-sizing: border-box; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.25) #07080C; }
     html { scroll-behavior: smooth; background: #07080C; color: #fff; }
     body { margin: 0; overflow-x: hidden; background: #07080C; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
-    .card { background: rgba(14,16,23,.85); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,.14); box-shadow: 0 28px 60px -15px rgba(0,0,0,.78); }
+    .card { background: rgba(14,16,23,.88); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,.14); box-shadow: 0 28px 60px -15px rgba(0,0,0,.78); }
     .tab-on { background: #fff; color: #000; }
     .tab-off { color: #fff; }
     .tab-off:hover { background: rgba(255,255,255,.1); }
     .item-on { border-color: #38BDF8 !important; background: rgba(56,189,248,.14) !important; }
     button:focus-visible, a:focus-visible { outline: 3px solid #38BDF8; outline-offset: 2px; }
+
+    /* Model Viewer Custom Hotspot Styling */
+    model-viewer {
+      width: 100%;
+      height: 100%;
+      background-color: #07080C;
+    }
+    .Hotspot {
+      background: rgba(14, 16, 23, 0.85);
+      border: 2px solid #38bdf8;
+      border-radius: 35px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      color: #fff;
+      display: flex;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      justify-content: center;
+      padding: 8px 14px;
+      position: relative;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(8px);
+    }
+    .Hotspot:not([data-visible]) {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+    .HotspotAnnotation {
+      white-space: nowrap;
+    }
+    #ar-button {
+      background: #38bdf8;
+      border-radius: 9999px;
+      border: none;
+      color: #000;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 700;
+      padding: 12px 24px;
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      box-shadow: 0 10px 25px rgba(56, 189, 248, 0.4);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #ar-button:hover {
+      background: #7dd3fc;
+    }
+    .progress-bar {
+      display: block;
+      width: 33%;
+      height: 10%;
+      max-height: 2px;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .progress-bar.hide {
+      display: none;
+    }
+    .update-bar {
+      background: #38bdf8;
+      width: 0%;
+      height: 100%;
+      transition: width 0.3s;
+    }
+    #ar-prompt {
+      position: absolute;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      animation: bounce 1s infinite alternate;
+    }
+    #ar-prompt img {
+      width: 48px;
+    }
+    @keyframes bounce {
+      from { transform: translate(-50%, 0); }
+      to { transform: translate(-50%, -10px); }
+    }
     @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { animation: none !important; } }
   </style>
 </head>
@@ -33,9 +115,31 @@
 
   <!-- Fixed 3D Viewport on the Right (50% Width on Large Screens) -->
   <div class="fixed top-0 right-0 w-full lg:w-1/2 h-screen z-0 bg-[#07080C]">
-    <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(40,60,100,.35)_0%,#07080C_80%)] pointer-events-none"></div>
-    <canvas id="three-canvas" class="block w-full h-full relative cursor-grab active:cursor-grabbing"></canvas>
-    
+    <model-viewer id="quest-viewer" src="Quest3s.glb" ar ar-modes="webxr scene-viewer quick-look" camera-controls tone-mapping="neutral" poster="" shadow-intensity="1">
+      <button class="Hotspot" slot="hotspot-3" data-position="6.280493709110774m -0.2124072772032108m 9.64568937062215m" data-normal="0.9989230327385245m 0.04559114762680621m 0.0086152145962682m" data-visibility-attribute="visible">
+        <div class="HotspotAnnotation">Power Button</div>
+      </button>
+      <button class="Hotspot" slot="hotspot-4" data-position="6.793535079931506m 0.8715942640215133m 7.62108387621874m" data-normal="0.9814297846415952m 0.16376713631957862m 0.09987944172869953m" data-visibility-attribute="visible">
+        <div class="HotspotAnnotation">Charge Port</div>
+      </button>
+      <button class="Hotspot" slot="hotspot-5" data-position="-3.195955413049165m -3.9005417568145297m 8.584524188572667m" data-normal="-0.1275440128049739m -0.9909152358726137m -0.04265583328370433m" data-visibility-attribute="visible">
+        <div class="HotspotAnnotation">Action Button</div>
+      </button>
+      <button class="Hotspot" slot="hotspot-6" data-position="-3.8152313052393034m -3.925449085912005m 9.614456185618016m" data-normal="-0.1053789848556674m -0.9943804639027154m -0.010137186957425824m" data-visibility-attribute="visible">
+        <div class="HotspotAnnotation">Volume Rocker</div>
+      </button>
+      <button class="Hotspot" slot="hotspot-8" data-position="6.820367894579817m -0.08138827934936055m 1.3673921514416572m" data-normal="-0.6853026912290792m -0.694294724081356m -0.21980686410341085m" data-visibility-attribute="visible">
+        <div class="HotspotAnnotation">Speaker</div>
+      </button>
+      <div class="progress-bar hide" slot="progress-bar">
+        <div class="update-bar"></div>
+      </div>
+      <button slot="ar-button" id="ar-button">View in your space</button>
+      <div id="ar-prompt">
+        <img src="https://modelviewer.dev/shared-assets/icons/hand.png" alt="AR prompt">
+      </div>
+    </model-viewer>
+
     <!-- Model Loading Indicator Badge -->
     <div class="absolute top-24 right-6 lg:right-12 hidden sm:flex items-center gap-3 px-4 py-2 rounded-full bg-black/60 backdrop-blur-md border border-white/15 pointer-events-none z-10">
       <span id="model-dot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
@@ -58,7 +162,6 @@
   <!-- Bottom Floating View Controls -->
   <div class="fixed bottom-6 right-6 lg:right-12 z-30">
     <div class="card rounded-full px-3 py-2 flex items-center gap-2">
-      <button id="btn-autorotate" class="px-4 py-2 rounded-full font-semibold text-sky-300 bg-sky-400/15 border border-sky-400/30 text-sm whitespace-nowrap transition">Auto-rotate: on</button>
       <button id="btn-reset-cam" class="px-4 py-2 rounded-full font-semibold text-slate-200 hover:bg-white/10 text-sm whitespace-nowrap transition">Reset view</button>
     </div>
   </div>
@@ -77,7 +180,7 @@
           Master your Meta Quest 3S
         </h1>
         <p class="text-lg sm:text-xl text-slate-300 leading-relaxed mb-8">
-          Explore physical controls with free 3D model rotation, connect to your laptop display, reconfigure Wi-Fi networks, and practice emergency soft resets.
+          Explore physical controls with full 3D model rotation, connect to your laptop display, reconfigure Wi-Fi networks, and practice emergency soft resets.
         </p>
         <div class="flex flex-wrap gap-3 mb-8">
           <button onclick="scrollToStage(1)" class="px-6 py-3.5 rounded-full bg-white text-black font-bold hover:bg-slate-200 transition">Buttons & Ports</button>
@@ -94,7 +197,7 @@
       <div class="w-full max-w-2xl">
         <div class="card rounded-3xl p-6 sm:p-8">
           <h2 class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">Hardware & Controls</h2>
-          <p class="text-slate-300 mb-6">Select a component below to highlight its exact location on the 3D headset model.</p>
+          <p class="text-slate-300 mb-6">Select a component below to inspect its exact location and annotations on the headset model.</p>
           
           <div class="inline-flex p-1 rounded-full bg-white/10 mb-6 flex-wrap gap-1" role="tablist">
             <button id="tab-headset" class="tab-on px-4 py-2 rounded-full font-bold text-sm">Headset</button>
@@ -175,71 +278,54 @@
     </section>
   </main>
 
-  <script type="module">
-    import * as THREE from 'three';
-    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-    import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-    import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-
-    // ---------- Content mapping with exact user coordinates ----------
-    const CAM = { k: 'cameras', m: ['camera'], p: [0.3, 0.05, 0.5] };
+  <script>
+    // ---------- Content mapping for sections ----------
     const buttons = {
       headset: [
         { 
           n: 'Power Button', 
           w: 'Right / Left side of headset', 
-          d: 'Press once to sleep/wake. Hold for power menu or ~10 seconds to force a hardware restart.', 
-          m: ['power', 'hotspot-3'], 
-          p: [6.280, -0.212, 9.645] 
+          d: 'Press once to sleep/wake. Hold for power menu or ~10 seconds to force a hardware restart.',
+          slot: 'hotspot-3'
         },
         { 
           n: 'Charge Port', 
           w: 'Right side / lower temple', 
-          d: 'USB Type-C port for fast battery charging and Quest Link PC VR data connection.', 
-          m: ['charge', 'port', 'hotspot-4'], 
-          p: [6.793, 0.871, 7.621] 
+          d: 'USB Type-C port for fast battery charging and Quest Link PC VR data connection.',
+          slot: 'hotspot-4'
         },
         { 
           n: 'Action Button', 
           w: 'Underside housing', 
-          d: 'Dedicated auxiliary button for quick system shortcuts and accessory triggers.', 
-          m: ['action', 'hotspot-5'], 
-          p: [-3.195, -3.900, 8.584] 
+          d: 'Dedicated auxiliary button for quick system shortcuts and accessory triggers.',
+          slot: 'hotspot-5'
         },
         { 
           n: 'Volume Rocker', 
           w: 'Underside lower edge', 
-          d: 'Adjusts master audio volume. Used with power button for recovery boot menu.', 
-          m: ['volume', 'rocker', 'hotspot-6'], 
-          p: [-3.815, -3.925, 9.614] 
+          d: 'Adjusts master audio volume. Used with power button for recovery boot menu.',
+          slot: 'hotspot-6'
+        },
+        { 
+          n: 'Speaker', 
+          w: 'Audio arm / strap mount', 
+          d: 'Integrated spatial audio speakers delivering immersive sound without headphones.',
+          slot: 'hotspot-8'
         },
         { 
           n: 'Proximity Sensor', 
           w: 'Between lenses', 
-          d: 'Detects when headset is worn to power display panels on and off automatically.', 
-          m: ['proximity'], 
-          p: [0, 0.1, -0.35] 
+          d: 'Detects when headset is worn to power display panels on and off automatically.'
         },
         { 
           n: 'IPD Adjustment', 
           w: 'Underside lens dial', 
-          d: 'Sets physical distance between lenses to match your eye alignment.', 
-          m: ['ipd', 'dial'], 
-          p: [0.15, -0.35, 0.05] 
+          d: 'Sets physical distance between lenses to match your eye alignment.'
         },
         { 
           n: 'Passthrough Cameras', 
           w: 'Front faceplate', 
-          d: 'High-resolution color sensors capturing real-world environment for mixed reality.', 
-          ...CAM 
-        },
-        { 
-          n: 'Depth Sensor', 
-          w: 'Front faceplate center', 
-          d: 'Scans room geometry for accurate spatial mapping and Guardian boundaries.', 
-          m: ['depth'], 
-          p: [0, 0, 0.5] 
+          d: 'High-resolution color sensors capturing real-world environment for mixed reality.'
         }
       ],
       controller: [
@@ -254,12 +340,11 @@
         { n: 'Battery Compartment', w: 'Base handle', d: 'Houses single AA battery behind magnetic sliding cover.', dots: [[97, 172], [303, 172]] }
       ],
       hand: [
-        { n: 'Enable Hand Tracking', w: 'Settings > Movement', d: 'Turn on optical tracking to navigate completely controller-free.', ...CAM },
-        { n: 'Point & Pinch', w: 'Index & thumb', d: 'Extend hand and touch thumb to index finger to click.', ...CAM },
-        { n: 'Scroll & Drag', w: 'Pinch & hold', d: 'Maintain pinch while moving hand to scroll windows.', ...CAM },
-        { n: 'Direct Touch', w: 'Fingertip', d: 'Reach out and physically tap virtual UI buttons.', ...CAM },
-        { n: 'Universal Menu Gesture', w: 'Palm facing you', d: 'Hold palm inward and pinch to open system menu.', ...CAM },
-        { n: 'Tracking Environment', w: 'Lighting & cameras', d: 'Keep hands in camera view with adequate room lighting.', ...CAM }
+        { n: 'Enable Hand Tracking', w: 'Settings > Movement', d: 'Turn on optical tracking to navigate completely controller-free.' },
+        { n: 'Point & Pinch', w: 'Index & thumb', d: 'Extend hand and touch thumb to index finger to click.' },
+        { n: 'Scroll & Drag', w: 'Pinch & hold', d: 'Maintain pinch while moving hand to scroll windows.' },
+        { n: 'Direct Touch', w: 'Fingertip', d: 'Reach out and physically tap virtual UI buttons.' },
+        { n: 'Universal Menu Gesture', w: 'Palm facing you', d: 'Hold palm inward and pinch to open system menu.' }
       ]
     };
 
@@ -327,6 +412,8 @@
       });
     }
 
+    const viewer = document.getElementById('quest-viewer');
+
     function showButton(i) {
       selected = i;
       const item = buttons[group][i];
@@ -336,7 +423,17 @@
       document.querySelectorAll('#btn-list button').forEach((b, k) => b.classList.toggle('item-on', k === i));
       document.getElementById('ctrl-svg-wrap').classList.toggle('hidden', group !== 'controller');
       markDots();
-      applyFocus();
+
+      // If item has a slot attribute corresponding to a model-viewer hotspot, orbit towards it
+      if (viewer && item.slot) {
+        const hotspotEl = viewer.querySelector(`[slot="${item.slot}"]`);
+        if (hotspotEl && hotspotEl.dataset.position) {
+          const parts = hotspotEl.dataset.position.replace(/m/g, '').trim().split(/\s+/).map(Number);
+          if (parts.length === 3) {
+            viewer.cameraTarget = `${parts[0]}m ${parts[1]}m ${parts[2]}m`;
+          }
+        }
+      }
     }
 
     function renderList() {
@@ -383,174 +480,29 @@
     });
     ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => holdBtn.addEventListener(ev, () => { if (holdTimer) endHold(false); }));
 
-    // ---------- Three.js Viewport & Unrestricted Orbit Controls ----------
-    const canvas = document.getElementById('three-canvas');
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(38, innerWidth / innerHeight, 0.05, 100);
-    camera.position.set(0, 0.4, 3.2);
+    // Model viewer status loading events
+    viewer.addEventListener('load', () => {
+      document.getElementById('model-label').textContent = 'Quest3s.glb loaded ✓';
+      document.getElementById('model-dot').className = 'w-2.5 h-2.5 rounded-full bg-emerald-400';
+    });
+    viewer.addEventListener('error', () => {
+      document.getElementById('model-label').textContent = 'Quest3s.glb (place in folder)';
+      document.getElementById('model-dot').className = 'w-2.5 h-2.5 rounded-full bg-red-400';
+    });
 
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    renderer.setSize(innerWidth, innerHeight);
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.2;
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
-
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-    controls.minDistance = 1.0;
-    controls.maxDistance = 8.0;
-    // Free rotation in all axes enabled (no polar angle clamping)
-
-    scene.add(new THREE.AmbientLight(0xffffff, 0.9));
-    const keyLight = new THREE.DirectionalLight(0xffffff, 2.2); keyLight.position.set(4, 6, 5); scene.add(keyLight);
-    const rimLight = new THREE.DirectionalLight(0x38bdf8, 1.4); rimLight.position.set(-5, 3, -4); scene.add(rimLight);
-
-    const root = new THREE.Group();
-    scene.add(root);
-
-    const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
-    const loader = new GLTFLoader();
-    loader.setDRACOLoader(dracoLoader);
-
-    const label = document.getElementById('model-label');
-    const dot = document.getElementById('model-dot');
-
-    let wrapperRef = null, modelSize = null;
-    const meshes = [];
-
-    function mount(gltfScene) {
-      if (wrapperRef) root.remove(wrapperRef);
-      gltfScene.updateMatrixWorld(true);
-      const box = new THREE.Box3().setFromObject(gltfScene);
-      const size = box.getSize(new THREE.Vector3());
-      const c = box.getCenter(new THREE.Vector3());
-      const sc = 1.9 / (Math.max(size.x, size.y, size.z) || 1);
-      const wrapper = new THREE.Group();
-      gltfScene.position.set(-c.x, -c.y, -c.z);
-      wrapper.add(gltfScene);
-      wrapper.scale.setScalar(sc);
-      root.add(wrapper);
-      wrapperRef = wrapper;
-      modelSize = size.clone().multiplyScalar(sc);
-      meshes.length = 0;
-      gltfScene.traverse(o => { if (o.isMesh) meshes.push(o); });
-      label.textContent = 'Quest3s.glb loaded ✓';
-      dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400';
-      clearHighlight();
-      applyFocus();
-    }
-
-    // Try loading local file first, with fallback to reliable sample asset if file is missing/unreachable
-    loader.load(
-      'Quest3s.glb',
-      (g) => mount(g.scene),
-      undefined,
-      () => {
-        // Fallback to standard Three.js sample asset to ensure zero errors on preview run
-        loader.load(
-          'https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/models/gltf/RobotExpressive/RobotExpressive.glb',
-          (g) => mount(g.scene),
-          undefined,
-          () => {
-            label.textContent = 'Quest3s.glb (place in folder)';
-            dot.className = 'w-2.5 h-2.5 rounded-full bg-red-400';
-          }
-        );
+    document.getElementById('btn-reset-cam').onclick = () => {
+      if (viewer && typeof viewer.resetTurntable === 'function') {
+        viewer.resetTurntable();
       }
-    );
+      viewer.cameraTarget = 'auto auto auto';
+    };
 
-    // Camera keyframes per stage
-    const V = (x, y, z) => new THREE.Vector3(x, y, z);
-    const frames = [
-      { cam: V(0, 0.3, 3.1), look: V(0, 0, 0), rotY: 0 },
-      { cam: V(0.5, 0.2, 2.6), look: V(0, 0, 0), rotY: 0.4 },
-      { cam: V(-0.4, 0.25, 2.8), look: V(0, 0, 0), rotY: -0.5 },
-      { cam: V(0.3, 0.4, 2.7), look: V(0, 0, 0), rotY: 0.8 },
-      { cam: V(0, -0.1, 2.7), look: V(0, 0, 0), rotY: 0.2 }
-    ];
-    const targetCam = frames[0].cam.clone();
-    const targetLook = frames[0].look.clone();
-    controls.target.copy(targetLook);
-    let targetRotY = frames[0].rotY;
-    let activeStage = 0;
-    let autoRotate = true;
-
-    // ---------- Hotspot Marker & Glow Effects ----------
-    function makeGlow() {
-      const c = document.createElement('canvas'); c.width = c.height = 128;
-      const g = c.getContext('2d');
-      const gr = g.createRadialGradient(64, 64, 4, 64, 64, 60);
-      gr.addColorStop(0, 'rgba(56,189,248,.95)'); gr.addColorStop(.35, 'rgba(56,189,248,.35)'); gr.addColorStop(1, 'rgba(56,189,248,0)');
-      g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
-      g.strokeStyle = '#fff'; g.lineWidth = 5; g.beginPath(); g.arc(64, 64, 26, 0, Math.PI * 2); g.stroke();
-      const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
-    }
-
-    const marker = new THREE.Sprite(new THREE.SpriteMaterial({ map: makeGlow(), depthTest: false, transparent: true }));
-    marker.renderOrder = 999; marker.visible = false;
-    root.add(marker);
-
-    let highlighted = [];
-    const meshText = m => [m.name, m.parent && m.parent.name, Array.isArray(m.material) ? '' : (m.material && m.material.name)].join(' ').toLowerCase();
-
-    function highlightMesh(m) {
-      if (Array.isArray(m.material) || !m.material || !('emissive' in m.material)) return;
-      highlighted.push({ m, orig: m.material });
-      const mat = m.material.clone();
-      mat.emissive = new THREE.Color(0x38bdf8); mat.emissiveIntensity = 1.6;
-      m.material = mat;
-    }
-    function clearHighlight() {
-      highlighted.forEach(({ m, orig }) => { m.material.dispose(); m.material = orig; });
-      highlighted = [];
-    }
-    let focus = false;
-    function clearFocus() { focus = false; marker.visible = false; clearHighlight(); }
-
-    function focusFeature(item) {
-      clearHighlight();
-      let local = null;
-      const pp = item.p;
-      const hits = item.m ? meshes.filter(m => item.m.some(k => meshText(m).includes(k))) : [];
-      if (hits.length) {
-        const ry = root.rotation.y, py = root.position.y;
-        root.rotation.y = 0; root.position.y = 0; root.updateMatrixWorld(true);
-        const box = new THREE.Box3();
-        hits.forEach(h => box.expandByObject(h));
-        local = root.worldToLocal(box.getCenter(new THREE.Vector3()));
-        root.rotation.y = ry; root.position.y = py; root.updateMatrixWorld(true);
-        hits.forEach(highlightMesh);
-      } else if (pp && modelSize) {
-        // Scale user coordinates cleanly relative to bounding box
-        local = new THREE.Vector3(pp[0] * 0.05, pp[1] * 0.05, pp[2] * 0.05);
-      }
-      if (!local) { clearFocus(); return; }
-      marker.position.copy(local); marker.visible = true; focus = true;
-      let a = -Math.atan2(local.x, local.z);
-      a += Math.PI * 2 * Math.round((root.rotation.y - a) / (Math.PI * 2));
-      targetRotY = a;
-      targetCam.set(0.3, THREE.MathUtils.clamp(local.y * 1.2, -0.6, 0.6) + 0.1, 2.3);
-      targetLook.set(0, THREE.MathUtils.clamp(local.y * 0.5, -0.4, 0.4), 0);
-    }
-
-    function applyFocus() {
-      if (activeStage !== 1 || group === 'controller') { clearFocus(); return; }
-      focusFeature(buttons[group][selected]);
-    }
-
+    // Stage scrolling synchronization
     function setStage(i) {
-      activeStage = i;
-      const f = frames[i];
-      targetCam.copy(f.cam); targetLook.copy(f.look); targetRotY = f.rotY;
       document.querySelectorAll('.nav-link').forEach(b => {
         const on = Number(b.dataset.nav) === i;
         b.className = 'nav-link px-3 py-1.5 rounded-full transition ' + (on ? 'text-white bg-white/15 font-semibold' : 'text-slate-300 hover:text-white hover:bg-white/10');
       });
-      applyFocus();
     }
     window.scrollToStage = (i) => document.getElementById('stage-' + i)?.scrollIntoView({ behavior: 'smooth' });
 
@@ -560,47 +512,11 @@
         const d = Math.abs(s.getBoundingClientRect().top - innerHeight * 0.3);
         if (d < min) { min = d; best = Number(s.dataset.stage); }
       });
-      if (best !== activeStage) setStage(best);
-    });
-
-    const btnRot = document.getElementById('btn-autorotate');
-    btnRot.onclick = () => {
-      autoRotate = !autoRotate;
-      btnRot.textContent = autoRotate ? 'Auto-rotate: on' : 'Auto-rotate: off';
-      btnRot.classList.toggle('text-sky-300', autoRotate);
-      btnRot.classList.toggle('bg-sky-400/15', autoRotate);
-      btnRot.classList.toggle('text-slate-300', !autoRotate);
-    };
-    document.getElementById('btn-reset-cam').onclick = () => {
-      const f = frames[activeStage];
-      targetCam.copy(f.cam); targetLook.copy(f.look);
-      root.rotation.set(0, f.rotY, 0);
-      applyFocus();
-    };
-
-    const clock = new THREE.Clock();
-    function animate() {
-      requestAnimationFrame(animate);
-      const dt = clock.getDelta();
-      camera.position.lerp(targetCam, 0.05);
-      controls.target.lerp(targetLook, 0.05);
-      if (autoRotate && !focus) root.rotation.y += dt * 0.3;
-      else root.rotation.y = THREE.MathUtils.lerp(root.rotation.y, targetRotY, 0.06);
-      root.position.y = Math.sin(clock.elapsedTime * 1.1) * 0.015;
-      if (marker.visible) marker.scale.setScalar(0.2 + 0.05 * Math.sin(clock.elapsedTime * 5));
-      controls.update();
-      renderer.render(scene, camera);
-    }
-
-    addEventListener('resize', () => {
-      camera.aspect = innerWidth / innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(innerWidth, innerHeight);
+      setStage(best);
     });
 
     setStage(0);
     setGroup('headset');
-    animate();
   </script>
 </body>
 </html>
