@@ -14,17 +14,15 @@
     tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter','sans-serif'], display: ['Plus Jakarta Sans','sans-serif'] } } } }
   </script>
   <style>
-    * { box-sizing: border-box; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.25) #07080C; }
+    * { box-sizing: border-box; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.25) rgba(14,16,23,.85); }
     html { scroll-behavior: smooth; background: #07080C; color: #fff; }
     body { margin: 0; overflow-x: hidden; background: #07080C; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
     
     /* Frosted Video Background Layer */
     .video-bg-wrap {
       position: fixed;
-      top: 0;
-      right: 0;
-      width: 100%;
-      lg:width: 50%;
+      inset: 0;
+      width: 100vw;
       height: 100vh;
       z-index: 0;
       overflow: hidden;
@@ -34,35 +32,46 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      filter: blur(16px) brightness(0.45) saturate(1.2);
-      transform: scale(1.1);
+      filter: blur(18px) brightness(0.4) saturate(1.25);
+      transform: scale(1.12);
     }
     .video-overlay {
       position: absolute;
       inset: 0;
-      background: rgba(7, 8, 12, 0.45);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      background: rgba(7, 8, 12, 0.5);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
 
-    .card { background: rgba(14,16,23,.85); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,.14); box-shadow: 0 28px 60px -15px rgba(0,0,0,.78); }
+    /* Floating Frosted Glass Card */
+    .glass-card {
+      background: rgba(14, 16, 23, 0.82);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 30px 70px -15px rgba(0, 0, 0, 0.85);
+    }
+
     .tab-on { background: #fff; color: #000; }
     .tab-off { color: #fff; }
-    .tab-off:hover { background: rgba(255,255,255,.1); }
-    .item-on { border-color: #38BDF8 !important; background: rgba(56,189,248,.14) !important; }
+    .tab-off:hover { background: rgba(255,255,255,0.1); }
+    .item-on { border-color: #38BDF8 !important; background: rgba(56,189,248,0.18) !important; }
     button:focus-visible, a:focus-visible { outline: 3px solid #38BDF8; outline-offset: 2px; }
 
     /* Model Viewer Custom Hotspot Styling */
     model-viewer {
-      width: 100%;
-      height: 100%;
+      width: 100vw;
+      height: 100vh;
       background-color: transparent;
+      position: fixed;
+      inset: 0;
+      z-index: 1;
     }
     .Hotspot {
-      background: rgba(14, 16, 23, 0.85);
+      background: rgba(14, 16, 23, 0.88);
       border: 2px solid #38bdf8;
       border-radius: 35px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.6);
       color: #fff;
       display: flex;
       font-family: 'Inter', sans-serif;
@@ -72,10 +81,10 @@
       padding: 8px 14px;
       position: relative;
       transition: all 0.3s ease;
-      backdrop-filter: blur(8px);
+      backdrop-filter: blur(10px);
     }
     .Hotspot:not([data-visible]) {
-      opacity: 0.6;
+      opacity: 0.5;
       pointer-events: none;
     }
     .HotspotAnnotation {
@@ -88,23 +97,21 @@
       color: #000;
       font-family: 'Plus Jakarta Sans', sans-serif;
       font-weight: 700;
-      padding: 12px 24px;
+      padding: 12px 26px;
       position: absolute;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
+      bottom: 28px;
+      right: 28px;
+      z-index: 10;
       box-shadow: 0 10px 25px rgba(56, 189, 248, 0.4);
       cursor: pointer;
       transition: background 0.2s;
     }
-    #ar-button:hover {
-      background: #7dd3fc;
-    }
+    #ar-button:hover { background: #7dd3fc; }
+    
     .progress-bar {
       display: block;
       width: 33%;
-      height: 10%;
-      max-height: 2px;
+      height: 2px;
       position: absolute;
       left: 50%;
       top: 50%;
@@ -112,29 +119,22 @@
       background: rgba(255,255,255,0.1);
       border-radius: 4px;
       overflow: hidden;
+      z-index: 20;
     }
-    .progress-bar.hide {
-      display: none;
-    }
-    .update-bar {
-      background: #38bdf8;
-      width: 0%;
-      height: 100%;
-      transition: width 0.3s;
-    }
+    .progress-bar.hide { display: none; }
+    .update-bar { background: #38bdf8; width: 0%; height: 100%; transition: width 0.3s; }
+    
     #ar-prompt {
       position: absolute;
-      bottom: 80px;
-      left: 50%;
-      transform: translateX(-50%);
+      bottom: 85px;
+      right: 45px;
+      z-index: 10;
       animation: bounce 1s infinite alternate;
     }
-    #ar-prompt img {
-      width: 48px;
-    }
+    #ar-prompt img { width: 48px; }
     @keyframes bounce {
-      from { transform: translate(-50%, 0); }
-      to { transform: translate(-50%, -10px); }
+      from { transform: translateY(0); }
+      to { transform: translateY(-10px); }
     }
     @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { animation: none !important; } }
   </style>
@@ -150,46 +150,38 @@
     <div class="video-overlay"></div>
   </div>
 
-  <!-- Fixed 3D Viewport on the Right (50% Width on Large Screens) -->
-  <div class="fixed top-0 right-0 w-full lg:w-1/2 h-screen z-10 pointer-events-auto">
-    <model-viewer id="quest-viewer" src="Quest3s.glb" ar ar-modes="webxr scene-viewer quick-look" camera-controls tone-mapping="neutral" poster="poster.webp" shadow-intensity="1">
-      <button class="Hotspot" slot="hotspot-3" data-position="6.280493709110774m -0.2124072772032108m 9.64568937062215m" data-normal="0.9989230327385245m 0.04559114762680621m 0.0086152145962682m" data-visibility-attribute="visible">
+  <!-- Fullscreen 3D Model Viewer (Background Layer) -->
+  <model-viewer id="quest-viewer" src="Quest3s.glb" ar ar-modes="webxr scene-viewer quick-look" camera-controls tone-mapping="neutral" poster="poster.webp" shadow-intensity="1">
+    <button class="Hotspot" slot="hotspot-3" data-position="6.280493709110774m -0.2124072772032108m 9.64568937062215m" data-normal="0.9989230327385245m 0.04559114762680621m 0.0086152145962682m" data-visibility-attribute="visible">
         <div class="HotspotAnnotation">Power Button</div>
-      </button>
-      <button class="Hotspot" slot="hotspot-4" data-position="6.793535079931506m 0.8715942640215133m 7.62108387621874m" data-normal="0.9814297846415952m 0.16376713631957862m 0.09987944172869953m" data-visibility-attribute="visible">
+    </button>
+    <button class="Hotspot" slot="hotspot-4" data-position="6.793535079931506m 0.8715942640215133m 7.62108387621874m" data-normal="0.9814297846415952m 0.16376713631957862m 0.09987944172869953m" data-visibility-attribute="visible">
         <div class="HotspotAnnotation">Charge Port</div>
-      </button>
-      <button class="Hotspot" slot="hotspot-5" data-position="-3.195955413049165m -3.9005417568145297m 8.584524188572667m" data-normal="-0.1275440128049739m -0.9909152358726137m -0.04265583328370433m" data-visibility-attribute="visible">
+    </button>
+    <button class="Hotspot" slot="hotspot-5" data-position="-3.195955413049165m -3.9005417568145297m 8.584524188572667m" data-normal="-0.1275440128049739m -0.9909152358726137m -0.04265583328370433m" data-visibility-attribute="visible">
         <div class="HotspotAnnotation">Action Button</div>
-      </button>
-      <button class="Hotspot" slot="hotspot-6" data-position="-3.8152313052393034m -3.925449085912005m 9.614456185618016m" data-normal="-0.1053789848556674m -0.9943804639027154m -0.010137186957425824m" data-visibility-attribute="visible">
+    </button>
+    <button class="Hotspot" slot="hotspot-6" data-position="-3.8152313052393034m -3.925449085912005m 9.614456185618016m" data-normal="-0.1053789848556674m -0.9943804639027154m -0.010137186957425824m" data-visibility-attribute="visible">
         <div class="HotspotAnnotation">Volume Rocker</div>
-      </button>
-      <button class="Hotspot" slot="hotspot-8" data-position="6.820367894579817m -0.08138827934936055m 1.3673921514416572m" data-normal="-0.6853026912290792m -0.694294724081356m -0.21980686410341085m" data-visibility-attribute="visible">
+    </button>
+    <button class="Hotspot" slot="hotspot-8" data-position="6.820367894579817m -0.08138827934936055m 1.3673921514416572m" data-normal="-0.6853026912290792m -0.694294724081356m -0.21980686410341085m" data-visibility-attribute="visible">
         <div class="HotspotAnnotation">Speaker</div>
-      </button>
-      <div class="progress-bar hide" slot="progress-bar">
+    </button>
+    <div class="progress-bar hide" slot="progress-bar">
         <div class="update-bar"></div>
-      </div>
-      <button slot="ar-button" id="ar-button">View in your space</button>
-      <div id="ar-prompt">
-        <img src="https://modelviewer.dev/shared-assets/icons/hand.png" alt="AR prompt">
-      </div>
-    </model-viewer>
-
-    <!-- Model Loading Indicator Badge -->
-    <div class="absolute top-24 right-6 lg:right-12 hidden sm:flex items-center gap-3 px-4 py-2 rounded-full bg-black/60 backdrop-blur-md border border-white/15 pointer-events-none z-20">
-      <span id="model-dot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
-      <span id="model-label" class="text-sm font-semibold text-slate-200">Loading Quest3s.glb…</span>
     </div>
-  </div>
+    <button slot="ar-button" id="ar-button">View in your space</button>
+    <div id="ar-prompt">
+        <img src="https://modelviewer.dev/shared-assets/icons/hand.png" alt="AR prompt">
+    </div>
+  </model-viewer>
 
   <!-- Header -->
-  <header class="fixed top-0 inset-x-0 z-40 border-b border-white/10 bg-[#07080C]/85 backdrop-blur-xl">
-    <div class="max-w-[1720px] mx-auto px-6 lg:px-12 h-20 flex items-center justify-between gap-4">
+  <header class="fixed top-0 inset-x-0 z-40 border-b border-white/10 bg-[#07080C]/80 backdrop-blur-2xl">
+    <div class="max-w-[1800px] mx-auto px-6 lg:px-12 h-20 flex items-center justify-between gap-4">
       <div class="flex items-center gap-3.5">
-        <div class="w-3 h-3 rounded-full bg-sky-400"></div>
-        <span class="font-display font-extrabold text-xl sm:text-2xl">Meta Quest 3S</span>
+        <div class="w-3.5 h-3.5 rounded-full bg-sky-400 animate-pulse"></div>
+        <span class="font-display font-extrabold text-xl sm:text-2xl tracking-tight">Meta Quest 3S</span>
         <span class="hidden md:inline text-sm text-slate-300 font-medium pl-3 border-l border-white/20">Interactive 3D Guide</span>
       </div>
       <nav class="hidden xl:flex items-center gap-1.5 font-semibold text-sm" id="nav"></nav>
@@ -197,67 +189,67 @@
   </header>
 
   <!-- Bottom Floating View Controls -->
-  <div class="fixed bottom-6 right-6 lg:right-12 z-30 pointer-events-auto">
-    <div class="card rounded-full px-3 py-2 flex items-center gap-2">
-      <button id="btn-reset-cam" class="px-4 py-2 rounded-full font-semibold text-slate-200 hover:bg-white/10 text-sm whitespace-nowrap transition">Reset view</button>
+  <div class="fixed bottom-6 left-6 z-30 pointer-events-auto">
+    <div class="glass-card rounded-full px-4 py-2.5 flex items-center gap-3 shadow-2xl">
+      <span id="model-label" class="text-xs font-semibold text-slate-300">Quest3s.glb loaded</span>
+      <div class="w-px h-4 bg-white/20"></div>
+      <button id="btn-reset-cam" class="px-3 py-1.5 rounded-full font-semibold text-slate-200 hover:bg-white/10 text-xs transition">Reset view</button>
     </div>
   </div>
 
-  <!-- Main Content on the Left (50% Width on Large Screens) -->
-  <main class="relative z-20 w-full lg:w-1/2 min-h-screen pointer-events-none">
+  <!-- Floating Frosted Glass Content Containers on the Left -->
+  <main class="relative z-20 w-full lg:w-[620px] xl:w-[680px] min-h-screen pointer-events-none px-6 sm:px-12 pt-24 pb-24 space-y-32">
 
     <!-- 0 Hero Section -->
-    <section id="stage-0" data-stage="0" class="min-h-screen flex flex-col justify-center pt-32 pb-24 px-6 sm:px-12 lg:px-16 pointer-events-auto">
-      <div class="max-w-xl">
+    <section id="stage-0" data-stage="0" class="min-h-screen flex flex-col justify-center pointer-events-auto">
+      <div class="glass-card rounded-[32px] p-8 sm:p-10">
         <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sky-500/10 border border-sky-500/30 text-sky-400 text-sm font-semibold mb-6">
           <span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span>
           Official Hardware & Setup Manual
         </div>
-        <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.08] mb-6">
+        <h1 class="font-display text-4xl sm:text-5xl font-extrabold tracking-tight leading-[1.08] mb-6">
           Master your Meta Quest 3S
         </h1>
-        <p class="text-lg sm:text-xl text-slate-300 leading-relaxed mb-8">
+        <p class="text-lg text-slate-300 leading-relaxed mb-8">
           Explore physical controls with full 3D model rotation, connect to your laptop display, reconfigure Wi-Fi networks, and practice emergency soft resets.
         </p>
-        <div class="flex flex-wrap gap-3 mb-8">
-          <button onclick="scrollToStage(1)" class="px-6 py-3.5 rounded-full bg-white text-black font-bold hover:bg-slate-200 transition">Buttons & Ports</button>
-          <button onclick="scrollToStage(2)" class="px-6 py-3.5 rounded-full bg-white/10 border border-white/25 font-bold hover:bg-white/20 transition">Cast to laptop</button>
-          <button onclick="scrollToStage(3)" class="px-6 py-3.5 rounded-full bg-white/10 border border-white/25 font-bold hover:bg-white/20 transition">Change Wi-Fi</button>
-          <button onclick="scrollToStage(4)" class="px-6 py-3.5 rounded-full bg-white/10 border border-white/25 font-bold hover:bg-white/20 transition">Soft reset</button>
+        <div class="flex flex-wrap gap-3 mb-6">
+          <button onclick="scrollToStage(1)" class="px-5 py-3 rounded-full bg-white text-black font-bold hover:bg-slate-200 text-sm transition">Buttons & Ports</button>
+          <button onclick="scrollToStage(2)" class="px-5 py-3 rounded-full bg-white/10 border border-white/25 font-bold hover:bg-white/20 text-sm transition">Cast to laptop</button>
+          <button onclick="scrollToStage(3)" class="px-5 py-3 rounded-full bg-white/10 border border-white/25 font-bold hover:bg-white/20 text-sm transition">Change Wi-Fi</button>
+          <button onclick="scrollToStage(4)" class="px-5 py-3 rounded-full bg-white/10 border border-white/25 font-bold hover:bg-white/20 text-sm transition">Soft reset</button>
         </div>
-        <p class="text-sm text-slate-400 font-medium">💡 Tip: Click and drag anywhere on the 3D viewer to rotate freely in all axes.</p>
+        <p class="text-xs text-slate-400 font-medium">💡 Tip: Click and drag anywhere on the screen to rotate the 3D headset freely.</p>
       </div>
     </section>
 
     <!-- 1 Buttons & Controls Section -->
-    <section id="stage-1" data-stage="1" class="min-h-screen flex flex-col justify-center py-28 px-6 sm:px-12 lg:px-16 pointer-events-auto">
-      <div class="w-full max-w-2xl">
-        <div class="card rounded-3xl p-6 sm:p-8">
-          <h2 class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">Hardware & Controls</h2>
-          <p class="text-slate-300 mb-6">Select a component below to rotate the 3D model directly to that exact feature.</p>
-          
-          <div class="inline-flex p-1 rounded-full bg-white/10 mb-6 flex-wrap gap-1" role="tablist">
-            <button id="tab-headset" class="tab-on px-4 py-2 rounded-full font-bold text-sm">Headset</button>
-            <button id="tab-controller" class="tab-off px-4 py-2 rounded-full font-bold text-sm">Controllers</button>
-            <button id="tab-hand" class="tab-off px-4 py-2 rounded-full font-bold text-sm">Hand tracking</button>
-          </div>
+    <section id="stage-1" data-stage="1" class="min-h-screen flex flex-col justify-center pointer-events-auto">
+      <div class="glass-card rounded-[32px] p-8 sm:p-10">
+        <h2 class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">Hardware & Controls</h2>
+        <p class="text-slate-300 text-sm mb-6">Select a component below to rotate the 3D model directly to that exact feature.</p>
+        
+        <div class="inline-flex p-1 rounded-full bg-white/10 mb-6 flex-wrap gap-1" role="tablist">
+          <button id="tab-headset" class="tab-on px-4 py-2 rounded-full font-bold text-sm">Headset</button>
+          <button id="tab-controller" class="tab-off px-4 py-2 rounded-full font-bold text-sm">Controllers</button>
+          <button id="tab-hand" class="tab-off px-4 py-2 rounded-full font-bold text-sm">Hand tracking</button>
+        </div>
 
-          <div class="grid sm:grid-cols-2 gap-5">
-            <div id="btn-list" class="space-y-2 max-h-[42vh] overflow-y-auto pr-1"></div>
-            <div class="p-5 rounded-2xl bg-black/50 border border-white/15 self-start">
-              <div id="btn-title" class="text-xl font-bold mb-1.5"></div>
-              <div id="btn-where" class="text-xs font-semibold text-sky-300 mb-3 uppercase tracking-wider"></div>
-              <p id="btn-desc" class="text-slate-200 text-sm leading-relaxed"></p>
-              
-              <div id="ctrl-svg-wrap" class="hidden mt-4">
-                <svg viewBox="0 0 400 190" class="w-full" role="img" aria-label="Touch Plus controllers top view">
-                  <rect x="15" y="12" width="165" height="150" rx="75" fill="#1c2230" stroke="#4b5568" stroke-width="2"/>
-                  <rect x="220" y="12" width="165" height="150" rx="75" fill="#1c2230" stroke="#4b5568" stroke-width="2"/>
-                  <text x="97" y="188" text-anchor="middle" fill="#cbd5e1" font-size="13">Left</text>
-                  <text x="303" y="188" text-anchor="middle" fill="#cbd5e1" font-size="13">Right</text>
-                  <g id="ctrl-dots"></g>
-                </svg>
-              </div>
+        <div class="grid sm:grid-cols-2 gap-5">
+          <div id="btn-list" class="space-y-2 max-h-[40vh] overflow-y-auto pr-1"></div>
+          <div class="p-5 rounded-2xl bg-black/60 border border-white/15 self-start">
+            <div id="btn-title" class="text-xl font-bold mb-1.5"></div>
+            <div id="btn-where" class="text-xs font-semibold text-sky-300 mb-3 uppercase tracking-wider"></div>
+            <p id="btn-desc" class="text-slate-200 text-sm leading-relaxed"></p>
+            
+            <div id="ctrl-svg-wrap" class="hidden mt-4">
+              <svg viewBox="0 0 400 190" class="w-full" role="img" aria-label="Touch Plus controllers top view">
+                <rect x="15" y="12" width="165" height="150" rx="75" fill="#1c2230" stroke="#4b5568" stroke-width="2"/>
+                <rect x="220" y="12" width="165" height="150" rx="75" fill="#1c2230" stroke="#4b5568" stroke-width="2"/>
+                <text x="97" y="188" text-anchor="middle" fill="#cbd5e1" font-size="13">Left</text>
+                <text x="303" y="188" text-anchor="middle" fill="#cbd5e1" font-size="13">Right</text>
+                <g id="ctrl-dots"></g>
+              </svg>
             </div>
           </div>
         </div>
@@ -265,51 +257,45 @@
     </section>
 
     <!-- 2 Cast Section -->
-    <section id="stage-2" data-stage="2" class="min-h-screen flex flex-col justify-center py-28 px-6 sm:px-12 lg:px-16 pointer-events-auto">
-      <div class="w-full max-w-2xl">
-        <div class="card rounded-3xl p-6 sm:p-8">
-          <h2 class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">Cast your screen to a laptop</h2>
-          <p class="text-slate-300 mb-6">Stream what you see inside your headset directly to any laptop web browser.</p>
-          <ol id="steps-cast" class="space-y-3"></ol>
-          <div class="mt-6 p-4 rounded-2xl bg-amber-500/15 border border-amber-400/40">
-            <h3 class="text-base font-bold mb-1 text-amber-300">Troubleshooting Casting</h3>
-            <p class="text-sm text-slate-200 leading-relaxed">Ensure both devices are on the exact same Wi-Fi frequency band. Use Google Chrome or Microsoft Edge, and turn off active VPN software.</p>
-          </div>
+    <section id="stage-2" data-stage="2" class="min-h-screen flex flex-col justify-center pointer-events-auto">
+      <div class="glass-card rounded-[32px] p-8 sm:p-10">
+        <h2 class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">Cast your screen to a laptop</h2>
+        <p class="text-slate-300 text-sm mb-6">Stream what you see inside your headset directly to any laptop web browser.</p>
+        <ol id="steps-cast" class="space-y-3"></ol>
+        <div class="mt-6 p-4 rounded-2xl bg-amber-500/15 border border-amber-400/40">
+          <h3 class="text-sm font-bold mb-1 text-amber-300">Troubleshooting Casting</h3>
+          <p class="text-xs text-slate-200 leading-relaxed">Ensure both devices are on the exact same Wi-Fi frequency band. Use Google Chrome or Microsoft Edge, and turn off active VPN software.</p>
         </div>
       </div>
     </section>
 
     <!-- 3 Wi-Fi Section -->
-    <section id="stage-3" data-stage="3" class="min-h-screen flex flex-col justify-center py-28 px-6 sm:px-12 lg:px-16 pointer-events-auto">
-      <div class="w-full max-w-2xl">
-        <div class="card rounded-3xl p-6 sm:p-8">
-          <h2 class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">Change the Wi-Fi network</h2>
-          <p class="text-slate-300 mb-6">Switch wireless connections quickly inside headset settings or via the mobile app.</p>
-          <ol id="steps-wifi" class="space-y-3"></ol>
-        </div>
+    <section id="stage-3" data-stage="3" class="min-h-screen flex flex-col justify-center pointer-events-auto">
+      <div class="glass-card rounded-[32px] p-8 sm:p-10">
+        <h2 class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">Change the Wi-Fi network</h2>
+        <p class="text-slate-300 text-sm mb-6">Switch wireless connections quickly inside headset settings or via the mobile app.</p>
+        <ol id="steps-wifi" class="space-y-3"></ol>
       </div>
     </section>
 
     <!-- 4 Soft Reset Section -->
-    <section id="stage-4" data-stage="4" class="min-h-screen flex flex-col justify-center py-28 px-6 sm:px-12 lg:px-16 pointer-events-auto">
-      <div class="w-full max-w-2xl">
-        <div class="card rounded-3xl p-6 sm:p-8">
-          <h2 class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">Soft reset a frozen headset</h2>
-          <p class="text-slate-300 mb-6">Safely reboot your Quest 3S without losing any game saves, apps, or configurations.</p>
-          <ol id="steps-reset" class="space-y-3 mb-6"></ol>
+    <section id="stage-4" data-stage="4" class="min-h-screen flex flex-col justify-center pointer-events-auto">
+      <div class="glass-card rounded-[32px] p-8 sm:p-10">
+        <h2 class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">Soft reset a frozen headset</h2>
+        <p class="text-slate-300 text-sm mb-6">Safely reboot your Quest 3S without losing any game saves, apps, or configurations.</p>
+        <ol id="steps-reset" class="space-y-3 mb-6"></ol>
 
-          <div class="p-4 rounded-2xl bg-white/5 border border-white/15 mb-6">
-            <h3 class="text-base font-bold mb-2">Practice Power Button Hold</h3>
-            <button id="hold-btn" class="w-full relative overflow-hidden px-6 py-3.5 rounded-full bg-white/10 border border-white/25 font-bold text-sm select-none touch-none transition hover:bg-white/15">
-              <span id="hold-fill" class="absolute inset-y-0 left-0 bg-sky-500/40 transition-all duration-75" style="width:0%"></span>
-              <span id="hold-text" class="relative">Press and hold the Power Button</span>
-            </button>
-          </div>
+        <div class="p-4 rounded-2xl bg-white/5 border border-white/15 mb-6">
+          <h3 class="text-sm font-bold mb-2">Practice Power Button Hold</h3>
+          <button id="hold-btn" class="w-full relative overflow-hidden px-6 py-3.5 rounded-full bg-white/10 border border-white/25 font-bold text-sm select-none touch-none transition hover:bg-white/15">
+            <span id="hold-fill" class="absolute inset-y-0 left-0 bg-sky-500/40 transition-all duration-75" style="width:0%"></span>
+            <span id="hold-text" class="relative">Press and hold the Power Button</span>
+          </button>
+        </div>
 
-          <div class="p-4 rounded-2xl bg-red-500/15 border border-red-400/50">
-            <h3 class="text-base font-bold mb-1 text-red-300">Factory Reset Caution</h3>
-            <p class="text-sm text-slate-200 leading-relaxed">Holding Power and Volume Down together opens the boot menu. Selecting Factory Reset erases all headset data permanently.</p>
-          </div>
+        <div class="p-4 rounded-2xl bg-red-500/15 border border-red-400/50">
+          <h3 class="text-sm font-bold mb-1 text-red-300">Factory Reset Caution</h3>
+          <p class="text-xs text-slate-200 leading-relaxed">Holding Power and Volume Down together opens the boot menu. Selecting Factory Reset erases all headset data permanently.</p>
         </div>
       </div>
     </section>
@@ -423,7 +409,7 @@
       const b = document.createElement('button');
       b.dataset.nav = i;
       b.textContent = name;
-      b.className = 'nav-link px-3 py-1.5 rounded-full text-slate-300 hover:text-white hover:bg-white/10 transition';
+      b.className = 'nav-link px-3.5 py-1.5 rounded-full text-slate-300 hover:text-white hover:bg-white/10 transition text-sm';
       b.onclick = () => window.scrollToStage(i);
       navEl.appendChild(b);
     });
@@ -432,8 +418,8 @@
       const ol = document.getElementById('steps-' + key);
       list.forEach(([t, d], i) => {
         const li = document.createElement('li');
-        li.className = 'flex gap-3.5 p-3.5 rounded-2xl bg-white/5 border border-white/10 text-sm';
-        li.innerHTML = `<span class="shrink-0 w-7 h-7 rounded-full bg-sky-400 text-black font-extrabold flex items-center justify-center text-xs">${i + 1}</span><div><div class="font-bold text-slate-100">${t}</div><p class="text-slate-300 mt-0.5 leading-relaxed">${d}</p></div>`;
+        li.className = 'flex gap-3.5 p-3.5 rounded-2xl bg-white/5 border border-white/10 text-xs sm:text-sm';
+        li.innerHTML = `<span class="shrink-0 w-6 h-6 rounded-full bg-sky-400 text-black font-extrabold flex items-center justify-center text-xs">${i + 1}</span><div><div class="font-bold text-slate-100">${t}</div><p class="text-slate-300 mt-0.5 leading-relaxed">${d}</p></div>`;
         ol.appendChild(li);
       });
     }
@@ -491,7 +477,7 @@
       list.innerHTML = '';
       buttons[group].forEach((item, i) => {
         const b = document.createElement('button');
-        b.className = 'w-full text-left px-3.5 py-2.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 font-semibold text-sm transition';
+        b.className = 'w-full text-left px-3.5 py-2.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 font-semibold text-xs sm:text-sm transition';
         b.textContent = item.n;
         b.onclick = () => showButton(i);
         list.appendChild(b);
@@ -533,11 +519,9 @@
     // Model viewer status loading events
     viewer.addEventListener('load', () => {
       document.getElementById('model-label').textContent = 'Quest3s.glb loaded ✓';
-      document.getElementById('model-dot').className = 'w-2.5 h-2.5 rounded-full bg-emerald-400';
     });
     viewer.addEventListener('error', () => {
       document.getElementById('model-label').textContent = 'Quest3s.glb (place in folder)';
-      document.getElementById('model-dot').className = 'w-2.5 h-2.5 rounded-full bg-red-400';
     });
 
     document.getElementById('btn-reset-cam').onclick = () => {
@@ -552,7 +536,7 @@
     function setStage(i) {
       document.querySelectorAll('.nav-link').forEach(b => {
         const on = Number(b.dataset.nav) === i;
-        b.className = 'nav-link px-3 py-1.5 rounded-full transition ' + (on ? 'text-white bg-white/15 font-semibold' : 'text-slate-300 hover:text-white hover:bg-white/10');
+        b.className = 'nav-link px-3.5 py-1.5 rounded-full transition text-sm ' + (on ? 'text-white bg-white/20 font-semibold' : 'text-slate-300 hover:text-white hover:bg-white/10');
       });
     }
     window.scrollToStage = (i) => document.getElementById('stage-' + i)?.scrollIntoView({ behavior: 'smooth' });
