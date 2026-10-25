@@ -1,313 +1,606 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>DFR Interactive Quest3S Guide</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
-<script>tailwind.config={theme:{extend:{fontFamily:{display:['Space Grotesk','sans-serif'],sans:['Inter','sans-serif']}}}}</script>
-<style>
-  :root{--acc:#5EEAD4;--acc2:#818CF8;--bg:#05060A}
-  *{box-sizing:border-box}
-  html{scroll-behavior:smooth;background:var(--bg);color:#fff}
-  body{margin:0;font-family:Inter,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden;background:var(--bg)}
-  /* video background */
-  #bg-video{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
-  #veil{position:fixed;inset:0;z-index:1;pointer-events:none;transition:opacity .8s,backdrop-filter .8s;
-    background:linear-gradient(90deg,rgba(5,6,10,.88) 0%,rgba(5,6,10,.45) 55%,rgba(5,6,10,.2) 100%),
-    radial-gradient(circle at 75% 50%,rgba(94,234,212,.12),transparent 60%);}
-  body.deep #veil{background:linear-gradient(90deg,rgba(5,6,10,.94) 0%,rgba(5,6,10,.7) 55%,rgba(5,6,10,.5) 100%);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-  /* viewer */
-  #viewer-wrap{position:fixed;top:0;right:0;width:100%;height:100vh;z-index:2}
-  @media(min-width:1024px){#viewer-wrap{width:55%}}
-  model-viewer{width:100%;height:100%;--poster-color:transparent;background:transparent;outline:none}
-  .glass{background:rgba(12,14,22,.55);backdrop-filter:blur(22px) saturate(1.4);-webkit-backdrop-filter:blur(22px) saturate(1.4);border:1px solid rgba(255,255,255,.14);box-shadow:0 30px 70px -20px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.08)}
-  /* hotspots */
-  .Hotspot{width:22px;height:22px;border-radius:50%;border:2px solid #fff;background:rgba(94,234,212,.35);padding:0;cursor:pointer;
-    box-shadow:0 0 0 0 rgba(94,234,212,.7);animation:pulse 2s infinite;transition:transform .25s,background .25s;
-    --min-hotspot-opacity:0;opacity:.85}
-  .Hotspot[data-visible]{opacity:1}
-  .Hotspot.on{transform:scale(1.35);background:var(--acc);border-color:#fff}
-  .HotspotAnnotation{position:absolute;left:30px;top:-4px;white-space:nowrap;padding:5px 11px;border-radius:999px;font:600 12px Inter,sans-serif;color:#fff;
-    background:rgba(5,6,10,.85);border:1px solid rgba(255,255,255,.25);pointer-events:none;opacity:0;transform:translateX(-6px);transition:.25s}
-  .Hotspot.on .HotspotAnnotation,.Hotspot:hover .HotspotAnnotation{opacity:1;transform:none}
-  @keyframes pulse{70%{box-shadow:0 0 0 14px rgba(94,234,212,0)}100%{box-shadow:0 0 0 0 rgba(94,234,212,0)}}
-  /* progress */
-  #progress{position:absolute;left:50%;bottom:45%;width:200px;height:3px;transform:translateX(-50%);background:rgba(255,255,255,.15);border-radius:3px;overflow:hidden}
-  #progress.hide{display:none}
-  #progress .update-bar{height:100%;width:0;background:var(--acc);transition:width .2s}
-  #ar-button{position:absolute;left:50%;bottom:92px;transform:translateX(-50%);padding:10px 20px;border-radius:999px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff;font:600 13px Inter,sans-serif;backdrop-filter:blur(10px);cursor:pointer}
-  #ar-prompt{display:none}
-  /* hero title */
-  .grad{background:linear-gradient(100deg,#fff 20%,var(--acc) 60%,var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
-  .tab-on{background:#fff;color:#000}.tab-off{color:#fff}.tab-off:hover{background:rgba(255,255,255,.12)}
-  .item-on{border-color:var(--acc)!important;background:rgba(94,234,212,.14)!important}
-  button:focus-visible,a:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
-  ::selection{background:var(--acc);color:#000}
-  #btn-list{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.3) transparent}
-  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important}}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meta Quest 3S — Interactive 3D Setup Guide</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <script type="importmap">
+    { "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
+  </script>
+  <script>
+    tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter','sans-serif'], display: ['Plus Jakarta Sans','sans-serif'] } } } }
+  </script>
+  <style>
+    * { box-sizing: border-box; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.25) #07080C; }
+    html { scroll-behavior: smooth; background: #07080C; color: #fff; }
+    body { margin: 0; overflow-x: hidden; background: #07080C; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+    .card { background: rgba(14,16,23,.85); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,.14); box-shadow: 0 28px 60px -15px rgba(0,0,0,.78); }
+    .tab-on { background: #fff; color: #000; }
+    .tab-off { color: #fff; }
+    .tab-off:hover { background: rgba(255,255,255,.1); }
+    .item-on { border-color: #38BDF8 !important; background: rgba(56,189,248,.14) !important; }
+    button:focus-visible, a:focus-visible { outline: 3px solid #38BDF8; outline-offset: 2px; }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { animation: none !important; } }
+  </style>
 </head>
-<body>
+<body class="selection:bg-sky-500 selection:text-black">
 
-<video id="bg-video" src="intro.mp4" autoplay muted loop playsinline preload="auto"></video>
-<div id="veil"></div>
-
-<!-- 3D viewer -->
-<div id="viewer-wrap">
-  <model-viewer id="mv" src="Quest3s.glb" ar ar-modes="webxr scene-viewer quick-look" camera-controls
-    tone-mapping="neutral" poster="poster.webp" shadow-intensity="1" auto-rotate auto-rotate-delay="0" rotation-per-second="18deg"
-    interaction-prompt="none" alt="Meta Quest 3S headset 3D model" camera-orbit="30deg 75deg auto" interpolation-decay="90">
-
-    <button class="Hotspot" slot="hotspot-3" data-position="6.280493709110774m -0.2124072772032108m 9.64568937062215m" data-normal="0.9989230327385245m 0.04559114762680621m 0.0086152145962682m" data-visibility-attribute="visible"><div class="HotspotAnnotation">Power Button</div></button>
-    <button class="Hotspot" slot="hotspot-4" data-position="6.793535079931506m 0.8715942640215133m 7.62108387621874m" data-normal="0.9814297846415952m 0.16376713631957862m 0.09987944172869953m" data-visibility-attribute="visible"><div class="HotspotAnnotation">Charge Port</div></button>
-    <button class="Hotspot" slot="hotspot-5" data-position="-3.195955413049165m -3.9005417568145297m 8.584524188572667m" data-normal="-0.1275440128049739m -0.9909152358726137m -0.04265583328370433m" data-visibility-attribute="visible"><div class="HotspotAnnotation">Action Button</div></button>
-    <button class="Hotspot" slot="hotspot-6" data-position="-3.8152313052393034m -3.925449085912005m 9.614456185618016m" data-normal="-0.1053789848556674m -0.9943804639027154m -0.010137186957425824m" data-visibility-attribute="visible"><div class="HotspotAnnotation">Volume Rocker</div></button>
-    <button class="Hotspot" slot="hotspot-8" data-position="6.820367894579817m -0.08138827934936055m 1.3673921514416572m" data-normal="-0.6853026912290792m -0.694294724081356m -0.21980686410341085m" data-visibility-attribute="visible"><div class="HotspotAnnotation">Speaker</div></button>
-
-    <div id="progress" slot="progress-bar"><div class="update-bar"></div></div>
-    <button slot="ar-button" id="ar-button">View in your space</button>
-    <div id="ar-prompt"><img src="https://modelviewer.dev/shared-assets/icons/hand.png" alt=""></div>
-  </model-viewer>
-</div>
-
-<!-- Header -->
-<header class="fixed top-0 inset-x-0 z-40 border-b border-white/10 bg-[#05060A]/50 backdrop-blur-xl">
-  <div class="max-w-[1720px] mx-auto px-6 lg:px-12 h-20 flex items-center justify-between">
-    <div class="flex items-center gap-3">
-      <span class="w-3 h-3 rounded-full bg-[var(--acc)] shadow-[0_0_14px_var(--acc)]"></span>
-      <span class="font-display font-bold text-xl sm:text-2xl">Meta Quest 3S</span>
+  <!-- Fixed 3D Viewport on the Right (50% Width on Large Screens) -->
+  <div class="fixed top-0 right-0 w-full lg:w-1/2 h-screen z-0 bg-[#07080C]">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(40,60,100,.35)_0%,#07080C_80%)] pointer-events-none"></div>
+    <canvas id="three-canvas" class="block w-full h-full relative cursor-grab active:cursor-grabbing"></canvas>
+    
+    <!-- Model Loading Indicator Badge -->
+    <div class="absolute top-24 right-6 lg:right-12 hidden sm:flex items-center gap-3 px-4 py-2 rounded-full bg-black/60 backdrop-blur-md border border-white/15 pointer-events-none z-10">
+      <span id="model-dot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+      <span id="model-label" class="text-sm font-semibold text-slate-200">Loading Quest3s.glb…</span>
     </div>
-    <nav id="nav" class="hidden md:flex items-center gap-1 text-sm font-semibold"></nav>
   </div>
-</header>
 
-<!-- View controls -->
-<div class="fixed bottom-6 right-6 lg:right-12 z-30 glass rounded-full px-3 py-2 flex gap-2">
-  <button id="btn-rot" class="px-4 py-2 rounded-full text-sm font-semibold text-teal-200 bg-teal-300/15 border border-teal-300/30">Auto-rotate: on</button>
-  <button id="btn-reset" class="px-4 py-2 rounded-full text-sm font-semibold text-slate-200 hover:bg-white/10">Reset view</button>
-</div>
-
-<main class="relative z-20 w-full lg:w-[48%]">
-
-  <section data-stage="0" id="stage-0" class="min-h-screen flex flex-col justify-center pt-32 pb-24 px-6 sm:px-12 lg:px-16">
-    <div class="max-w-xl">
-      <h1 class="font-display text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.02] mb-6 grad">DFR guide to the Quest 3S</h1>
-      <p class="text-lg sm:text-xl text-slate-200 leading-relaxed mb-8">Spin the headset in 3D, find every button, cast to your laptop, switch Wi-Fi and fix a frozen screen.</p>
-      <div class="flex flex-wrap gap-3 mb-8">
-        <button onclick="go(1)" class="px-6 py-3.5 rounded-full bg-white text-black font-bold hover:bg-teal-200 transition">Buttons &amp; ports</button>
-        <button onclick="go(2)" class="px-6 py-3.5 rounded-full glass font-bold hover:bg-white/15 transition">Cast to laptop</button>
-        <button onclick="go(3)" class="px-6 py-3.5 rounded-full glass font-bold hover:bg-white/15 transition">Change Wi-Fi</button>
-        <button onclick="go(4)" class="px-6 py-3.5 rounded-full glass font-bold hover:bg-white/15 transition">Soft reset</button>
+  <!-- Header -->
+  <header class="fixed top-0 inset-x-0 z-40 border-b border-white/10 bg-[#07080C]/85 backdrop-blur-xl">
+    <div class="max-w-[1720px] mx-auto px-6 lg:px-12 h-20 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3.5">
+        <div class="w-3 h-3 rounded-full bg-sky-400"></div>
+        <span class="font-display font-extrabold text-xl sm:text-2xl">Meta Quest 3S</span>
+        <span class="hidden md:inline text-sm text-slate-300 font-medium pl-3 border-l border-white/20">Interactive 3D Guide</span>
       </div>
-      <p class="text-sm text-slate-300">Drag the headset to rotate it. Scroll to start.</p>
+      <nav class="hidden xl:flex items-center gap-1.5 font-semibold text-sm" id="nav"></nav>
     </div>
-  </section>
+  </header>
 
-  <section data-stage="1" id="stage-1" class="min-h-screen flex flex-col justify-center py-28 px-6 sm:px-12 lg:px-16">
-    <div class="glass rounded-3xl p-6 sm:p-8 max-w-2xl">
-      <h2 class="font-display text-3xl sm:text-4xl font-bold tracking-tight mb-3">Hardware &amp; controls</h2>
-      <p class="text-slate-300 mb-6">Pick a part to fly the camera to it on the 3D model.</p>
-      <div class="inline-flex p-1 rounded-full bg-white/10 mb-6 flex-wrap gap-1" role="tablist">
-        <button id="tab-headset" class="tab-on px-4 py-2 rounded-full font-bold text-sm">Headset</button>
-      
-        <button id="tab-hand" class="tab-off px-4 py-2 rounded-full font-bold text-sm">Hand tracking</button>
+  <!-- Bottom Floating View Controls -->
+  <div class="fixed bottom-6 right-6 lg:right-12 z-30">
+    <div class="card rounded-full px-3 py-2 flex items-center gap-2">
+      <button id="btn-autorotate" class="px-4 py-2 rounded-full font-semibold text-sky-300 bg-sky-400/15 border border-sky-400/30 text-sm whitespace-nowrap transition">Auto-rotate: on</button>
+      <button id="btn-reset-cam" class="px-4 py-2 rounded-full font-semibold text-slate-200 hover:bg-white/10 text-sm whitespace-nowrap transition">Reset view</button>
+    </div>
+  </div>
+
+  <!-- Main Content on the Left (50% Width on Large Screens) -->
+  <main class="relative z-20 w-full lg:w-1/2 min-h-screen">
+
+    <!-- 0 Hero Section -->
+    <section id="stage-0" data-stage="0" class="min-h-screen flex flex-col justify-center pt-32 pb-24 px-6 sm:px-12 lg:px-16">
+      <div class="max-w-xl">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sky-500/10 border border-sky-500/30 text-sky-400 text-sm font-semibold mb-6">
+          <span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span>
+          Official Hardware & Setup Manual
+        </div>
+        <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.08] mb-6">
+          Master your Meta Quest 3S
+        </h1>
+        <p class="text-lg sm:text-xl text-slate-300 leading-relaxed mb-8">
+          Explore physical controls with free 3D model rotation, connect to your laptop display, reconfigure Wi-Fi networks, and practice emergency soft resets.
+        </p>
+        <div class="flex flex-wrap gap-3 mb-8">
+          <button onclick="scrollToStage(1)" class="px-6 py-3.5 rounded-full bg-white text-black font-bold hover:bg-slate-200 transition">Buttons & Ports</button>
+          <button onclick="scrollToStage(2)" class="px-6 py-3.5 rounded-full bg-white/10 border border-white/25 font-bold hover:bg-white/20 transition">Cast to laptop</button>
+          <button onclick="scrollToStage(3)" class="px-6 py-3.5 rounded-full bg-white/10 border border-white/25 font-bold hover:bg-white/20 transition">Change Wi-Fi</button>
+          <button onclick="scrollToStage(4)" class="px-6 py-3.5 rounded-full bg-white/10 border border-white/25 font-bold hover:bg-white/20 transition">Soft reset</button>
+        </div>
+        <p class="text-sm text-slate-400 font-medium">💡 Tip: Click and drag anywhere on the 3D viewer to rotate freely in all axes.</p>
       </div>
-      <div class="grid sm:grid-cols-2 gap-5">
-        <div id="btn-list" class="space-y-2 max-h-[42vh] overflow-y-auto pr-1"></div>
-        <div class="p-5 rounded-2xl bg-black/40 border border-white/15 self-start">
-          <div id="btn-title" class="text-xl font-bold mb-1.5"></div>
-          <div id="btn-where" class="text-xs font-semibold text-teal-300 mb-3"></div>
-          <p id="btn-desc" class="text-slate-200 text-sm leading-relaxed"></p>
-          <div id="ctrl-wrap" class="hidden mt-4">
-            <svg viewBox="0 0 400 190" class="w-full" role="img" aria-label="Touch Plus controllers top view">
-              <rect x="15" y="12" width="165" height="150" rx="75" fill="#1c2230" stroke="#4b5568" stroke-width="2"/>
-              <rect x="220" y="12" width="165" height="150" rx="75" fill="#1c2230" stroke="#4b5568" stroke-width="2"/>
-              <text x="97" y="188" text-anchor="middle" fill="#cbd5e1" font-size="13">Left</text>
-              <text x="303" y="188" text-anchor="middle" fill="#cbd5e1" font-size="13">Right</text>
-              <g id="ctrl-dots"></g>
-            </svg>
+    </section>
+
+    <!-- 1 Buttons & Controls Section -->
+    <section id="stage-1" data-stage="1" class="min-h-screen flex flex-col justify-center py-28 px-6 sm:px-12 lg:px-16">
+      <div class="w-full max-w-2xl">
+        <div class="card rounded-3xl p-6 sm:p-8">
+          <h2 class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">Hardware & Controls</h2>
+          <p class="text-slate-300 mb-6">Select a component below to highlight its exact location on the 3D headset model.</p>
+          
+          <div class="inline-flex p-1 rounded-full bg-white/10 mb-6 flex-wrap gap-1" role="tablist">
+            <button id="tab-headset" class="tab-on px-4 py-2 rounded-full font-bold text-sm">Headset</button>
+            <button id="tab-controller" class="tab-off px-4 py-2 rounded-full font-bold text-sm">Controllers</button>
+            <button id="tab-hand" class="tab-off px-4 py-2 rounded-full font-bold text-sm">Hand tracking</button>
+          </div>
+
+          <div class="grid sm:grid-cols-2 gap-5">
+            <div id="btn-list" class="space-y-2 max-h-[42vh] overflow-y-auto pr-1"></div>
+            <div class="p-5 rounded-2xl bg-black/50 border border-white/15 self-start">
+              <div id="btn-title" class="text-xl font-bold mb-1.5"></div>
+              <div id="btn-where" class="text-xs font-semibold text-sky-300 mb-3 uppercase tracking-wider"></div>
+              <p id="btn-desc" class="text-slate-200 text-sm leading-relaxed"></p>
+              
+              <div id="ctrl-svg-wrap" class="hidden mt-4">
+                <svg viewBox="0 0 400 190" class="w-full" role="img" aria-label="Touch Plus controllers top view">
+                  <rect x="15" y="12" width="165" height="150" rx="75" fill="#1c2230" stroke="#4b5568" stroke-width="2"/>
+                  <rect x="220" y="12" width="165" height="150" rx="75" fill="#1c2230" stroke="#4b5568" stroke-width="2"/>
+                  <text x="97" y="188" text-anchor="middle" fill="#cbd5e1" font-size="13">Left</text>
+                  <text x="303" y="188" text-anchor="middle" fill="#cbd5e1" font-size="13">Right</text>
+                  <g id="ctrl-dots"></g>
+                </svg>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section data-stage="2" id="stage-2" class="min-h-screen flex flex-col justify-center py-28 px-6 sm:px-12 lg:px-16">
-    <div class="glass rounded-3xl p-6 sm:p-8 max-w-2xl">
-      <h2 class="font-display text-3xl sm:text-4xl font-bold tracking-tight mb-3">Cast your screen to a laptop</h2>
-      <p class="text-slate-300 mb-6">Stream what you see in the headset to a laptop browser.</p>
-      <ol id="steps-cast" class="space-y-3"></ol>
-      <div class="mt-6 p-4 rounded-2xl bg-amber-500/15 border border-amber-400/40">
-        <h3 class="font-bold mb-1 text-amber-300">Casting not working?</h3>
-        <p class="text-sm text-slate-200 leading-relaxed">Put both devices on the same Wi-Fi network, use Chrome or Edge, and turn off any VPN.</p>
+    <!-- 2 Cast Section -->
+    <section id="stage-2" data-stage="2" class="min-h-screen flex flex-col justify-center py-28 px-6 sm:px-12 lg:px-16">
+      <div class="w-full max-w-2xl">
+        <div class="card rounded-3xl p-6 sm:p-8">
+          <h2 class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">Cast your screen to a laptop</h2>
+          <p class="text-slate-300 mb-6">Stream what you see inside your headset directly to any laptop web browser.</p>
+          <ol id="steps-cast" class="space-y-3"></ol>
+          <div class="mt-6 p-4 rounded-2xl bg-amber-500/15 border border-amber-400/40">
+            <h3 class="text-base font-bold mb-1 text-amber-300">Troubleshooting Casting</h3>
+            <p class="text-sm text-slate-200 leading-relaxed">Ensure both devices are on the exact same Wi-Fi frequency band. Use Google Chrome or Microsoft Edge, and turn off active VPN software.</p>
+          </div>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section data-stage="3" id="stage-3" class="min-h-screen flex flex-col justify-center py-28 px-6 sm:px-12 lg:px-16">
-    <div class="glass rounded-3xl p-6 sm:p-8 max-w-2xl">
-      <h2 class="font-display text-3xl sm:text-4xl font-bold tracking-tight mb-3">Change the Wi-Fi network</h2>
-      <p class="text-slate-300 mb-6">Switch networks from the headset's quick settings.</p>
-      <ol id="steps-wifi" class="space-y-3"></ol>
-    </div>
-  </section>
-
-  <section data-stage="4" id="stage-4" class="min-h-screen flex flex-col justify-center py-28 px-6 sm:px-12 lg:px-16">
-    <div class="glass rounded-3xl p-6 sm:p-8 max-w-2xl">
-      <h2 class="font-display text-3xl sm:text-4xl font-bold tracking-tight mb-3">Soft reset a frozen headset</h2>
-      <p class="text-slate-300 mb-6">Restart without losing saves, apps or settings.</p>
-      <ol id="steps-reset" class="space-y-3 mb-6"></ol>
-      <div class="p-4 rounded-2xl bg-white/5 border border-white/15 mb-6">
-        <h3 class="font-bold mb-2">Practice the power button hold</h3>
-        <button id="hold-btn" class="w-full relative overflow-hidden px-6 py-3.5 rounded-full bg-white/10 border border-white/25 font-bold text-sm select-none touch-none">
-          <span id="hold-fill" class="absolute inset-y-0 left-0 bg-teal-400/40" style="width:0%"></span>
-          <span id="hold-text" class="relative">Press and hold the power button</span>
-        </button>
+    <!-- 3 Wi-Fi Section -->
+    <section id="stage-3" data-stage="3" class="min-h-screen flex flex-col justify-center py-28 px-6 sm:px-12 lg:px-16">
+      <div class="w-full max-w-2xl">
+        <div class="card rounded-3xl p-6 sm:p-8">
+          <h2 class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">Change the Wi-Fi network</h2>
+          <p class="text-slate-300 mb-6">Switch wireless connections quickly inside headset settings or via the mobile app.</p>
+          <ol id="steps-wifi" class="space-y-3"></ol>
+        </div>
       </div>
-      <div class="p-4 rounded-2xl bg-red-500/15 border border-red-400/50">
-        <h3 class="font-bold mb-1 text-red-300">Factory reset warning</h3>
-        <p class="text-sm text-slate-200 leading-relaxed">Holding Power and Volume Down opens the boot menu. Choosing Factory Reset erases all headset data permanently.</p>
+    </section>
+
+    <!-- 4 Soft Reset Section -->
+    <section id="stage-4" data-stage="4" class="min-h-screen flex flex-col justify-center py-28 px-6 sm:px-12 lg:px-16">
+      <div class="w-full max-w-2xl">
+        <div class="card rounded-3xl p-6 sm:p-8">
+          <h2 class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">Soft reset a frozen headset</h2>
+          <p class="text-slate-300 mb-6">Safely reboot your Quest 3S without losing any game saves, apps, or configurations.</p>
+          <ol id="steps-reset" class="space-y-3 mb-6"></ol>
+
+          <div class="p-4 rounded-2xl bg-white/5 border border-white/15 mb-6">
+            <h3 class="text-base font-bold mb-2">Practice Power Button Hold</h3>
+            <button id="hold-btn" class="w-full relative overflow-hidden px-6 py-3.5 rounded-full bg-white/10 border border-white/25 font-bold text-sm select-none touch-none transition hover:bg-white/15">
+              <span id="hold-fill" class="absolute inset-y-0 left-0 bg-sky-500/40 transition-all duration-75" style="width:0%"></span>
+              <span id="hold-text" class="relative">Press and hold the Power Button</span>
+            </button>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-red-500/15 border border-red-400/50">
+            <h3 class="text-base font-bold mb-1 text-red-300">Factory Reset Caution</h3>
+            <p class="text-sm text-slate-200 leading-relaxed">Holding Power and Volume Down together opens the boot menu. Selecting Factory Reset erases all headset data permanently.</p>
+          </div>
+        </div>
       </div>
-    </div>
-  </section>
-</main>
+    </section>
+  </main>
 
-<script>
-const mv = document.getElementById('mv');
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+    import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-/* ---- Content ---- */
-// hs = hotspot slot, orbit = camera angle to view it. Items without hs just reset to a front view.
-const FRONT = '0deg 80deg';
-const buttons = {
-  headset: [
-    {n:'Power Button',w:'Side of headset',d:'Press once to sleep or wake. Hold for the power menu, or about 10 seconds to force a restart.',hs:'hotspot-3',orbit:'90deg 85deg'},
-    {n:'Charge Port',w:'Side, lower temple',d:'USB-C port for charging and for Quest Link to a PC.',hs:'hotspot-4',orbit:'80deg 78deg'},
-    {n:'Action Button',w:'Underside',d:'Dedicated button for quick system shortcuts and accessories.',hs:'hotspot-5',orbit:'0deg 140deg'},
-    {n:'Volume Rocker',w:'Underside, lower edge',d:'Adjusts volume. Used with the power button for the recovery boot menu.',hs:'hotspot-6',orbit:'0deg 140deg'},
-    {n:'Speaker',w:'Side of headset',d:'Built-in speaker that plays audio when you are not using headphones.',hs:'hotspot-8',orbit:'-108deg 120deg'},
+    // ---------- Content mapping with exact user coordinates ----------
+    const CAM = { k: 'cameras', m: ['camera'], p: [0.3, 0.05, 0.5] };
+    const buttons = {
+      headset: [
+        { 
+          n: 'Power Button', 
+          w: 'Right / Left side of headset', 
+          d: 'Press once to sleep/wake. Hold for power menu or ~10 seconds to force a hardware restart.', 
+          m: ['power', 'hotspot-3'], 
+          p: [6.280, -0.212, 9.645] 
+        },
+        { 
+          n: 'Charge Port', 
+          w: 'Right side / lower temple', 
+          d: 'USB Type-C port for fast battery charging and Quest Link PC VR data connection.', 
+          m: ['charge', 'port', 'hotspot-4'], 
+          p: [6.793, 0.871, 7.621] 
+        },
+        { 
+          n: 'Action Button', 
+          w: 'Underside housing', 
+          d: 'Dedicated auxiliary button for quick system shortcuts and accessory triggers.', 
+          m: ['action', 'hotspot-5'], 
+          p: [-3.195, -3.900, 8.584] 
+        },
+        { 
+          n: 'Volume Rocker', 
+          w: 'Underside lower edge', 
+          d: 'Adjusts master audio volume. Used with power button for recovery boot menu.', 
+          m: ['volume', 'rocker', 'hotspot-6'], 
+          p: [-3.815, -3.925, 9.614] 
+        },
+        { 
+          n: 'Proximity Sensor', 
+          w: 'Between lenses', 
+          d: 'Detects when headset is worn to power display panels on and off automatically.', 
+          m: ['proximity'], 
+          p: [0, 0.1, -0.35] 
+        },
+        { 
+          n: 'IPD Adjustment', 
+          w: 'Underside lens dial', 
+          d: 'Sets physical distance between lenses to match your eye alignment.', 
+          m: ['ipd', 'dial'], 
+          p: [0.15, -0.35, 0.05] 
+        },
+        { 
+          n: 'Passthrough Cameras', 
+          w: 'Front faceplate', 
+          d: 'High-resolution color sensors capturing real-world environment for mixed reality.', 
+          ...CAM 
+        },
+        { 
+          n: 'Depth Sensor', 
+          w: 'Front faceplate center', 
+          d: 'Scans room geometry for accurate spatial mapping and Guardian boundaries.', 
+          m: ['depth'], 
+          p: [0, 0, 0.5] 
+        }
+      ],
+      controller: [
+        { n: 'Thumbstick', w: 'Top thumb area', d: 'Smooth movement and camera look. Click down to use as action button.', dots: [[80, 100], [320, 100]] },
+        { n: 'A & B Buttons', w: 'Right controller face', d: 'Primary action buttons for jump, select, and confirmation.', dots: [[260, 70], [260, 125]] },
+        { n: 'X & Y Buttons', w: 'Left controller face', d: 'Secondary action buttons for inventory and menus.', dots: [[140, 70], [140, 125]] },
+        { n: 'Menu Button', w: 'Left controller face', d: 'Opens in-game options or pauses app.', dots: [[150, 38]] },
+        { n: 'Meta Button', w: 'Right controller face', d: 'Launches universal Meta Horizon system menu instantly.', dots: [[250, 38]] },
+        { n: 'Trigger', w: 'Index finger', d: 'Primary selector and item activator.', dots: [[97, 22], [303, 22]] },
+        { n: 'Grip Button', w: 'Inner side edge', d: 'Grabs and holds virtual items.', dots: [[24, 95], [376, 95]] },
+        { n: 'Thumb Rest', w: 'Capacitive pad', d: 'Senses thumb position for realistic social hand avatars.', dots: [[85, 148], [315, 148]] },
+        { n: 'Battery Compartment', w: 'Base handle', d: 'Houses single AA battery behind magnetic sliding cover.', dots: [[97, 172], [303, 172]] }
+      ],
+      hand: [
+        { n: 'Enable Hand Tracking', w: 'Settings > Movement', d: 'Turn on optical tracking to navigate completely controller-free.', ...CAM },
+        { n: 'Point & Pinch', w: 'Index & thumb', d: 'Extend hand and touch thumb to index finger to click.', ...CAM },
+        { n: 'Scroll & Drag', w: 'Pinch & hold', d: 'Maintain pinch while moving hand to scroll windows.', ...CAM },
+        { n: 'Direct Touch', w: 'Fingertip', d: 'Reach out and physically tap virtual UI buttons.', ...CAM },
+        { n: 'Universal Menu Gesture', w: 'Palm facing you', d: 'Hold palm inward and pinch to open system menu.', ...CAM },
+        { n: 'Tracking Environment', w: 'Lighting & cameras', d: 'Keep hands in camera view with adequate room lighting.', ...CAM }
+      ]
+    };
 
-  ],
+    const steps = {
+      cast: [
+        ['Open Meta Casting', 'On your laptop browser (Chrome/Edge), visit oculus.com/casting and log in.'],
+        ['Access Universal Menu', 'Put on headset and press Meta button on right controller.'],
+        ['Select Cast Option', 'Click Sharing icon, select Cast, and choose Computer.'],
+        ['Initiate Mirroring', 'Confirm your browser selection and click Next.'],
+        ['End Session', 'Click Stop Casting in quick settings or close tab.']
+      ],
+      wifi: [
+        ['Open Universal Menu', 'Press Meta button on right controller.'],
+        ['Open Quick Settings', 'Select clock tile on left side of menu bar.'],
+        ['Select Wi-Fi', 'Choose Wi-Fi icon to view available wireless networks.'],
+        ['Connect', 'Select secure network, enter password, and connect.'],
+        ['Forget Networks', 'Select old networks and choose Forget.']
+      ],
+      reset: [
+        ['Hold Power Button', 'Press and hold headset power button for ~3 seconds.'],
+        ['Confirm Restart', 'Select Restart from on-screen menu.'],
+        ['Force Reboot (Frozen)', 'Hold power button continuously for 10 seconds.'],
+        ['Boot Up', 'Wait ~60 seconds for system restart.']
+      ]
+    };
 
-  hand: [
-    {n:'Enable Hand Tracking',w:'Settings > Movement',d:'Turn on hand tracking to navigate without controllers.',orbit:FRONT},
-    {n:'Point & Pinch',w:'Index finger and thumb',d:'Point at something and touch thumb to index finger to click.',orbit:FRONT},
-    {n:'Scroll & Drag',w:'Pinch and hold',d:'Keep pinching while you move your hand to scroll.',orbit:FRONT},
-    {n:'Direct Touch',w:'Fingertip',d:'Reach out and tap virtual buttons.',orbit:FRONT},
-    {n:'Menu Gesture',w:'Palm facing you',d:'Hold your palm toward you and pinch to open the menu.',orbit:FRONT},
-    {n:'Tracking Environment',w:'Lighting and cameras',d:'Keep your hands in view of the cameras in a well-lit room.',orbit:FRONT}
-  ]
-};
-const steps = {
-  cast:[['Open Meta Casting','On your laptop (Chrome or Edge), go to oculus.com/casting and log in.'],['Open the menu','Put on the headset and press the Meta button on the right controller.'],['Choose Cast','Select Sharing, then Cast, then Computer.'],['Start mirroring','Confirm your browser and select Next.'],['Stop casting','Select Stop Casting in quick settings, or close the tab.']],
-  wifi:[['Open the menu','Press the Meta button on the right controller.'],['Open quick settings','Select the clock on the left of the menu bar.'],['Select Wi-Fi','Choose the Wi-Fi icon to see available networks.'],['Connect','Pick a network, enter the password and connect.'],['Forget old networks','Select an old network and choose Forget.']],
-  reset:[['Hold the power button','Press and hold the power button for about 3 seconds.'],['Restart','Select Restart on the screen.'],['Force a reboot','If frozen, hold the power button for 10 seconds.'],['Wait','The headset takes about 60 seconds to restart.']]
-};
+    // ---------- Navigation Generation ----------
+    const stageNames = ['Intro', 'Buttons', 'Cast', 'Wi-Fi', 'Reset'];
+    const navEl = document.getElementById('nav');
+    stageNames.forEach((name, i) => {
+      const b = document.createElement('button');
+      b.dataset.nav = i;
+      b.textContent = name;
+      b.className = 'nav-link px-3 py-1.5 rounded-full text-slate-300 hover:text-white hover:bg-white/10 transition';
+      b.onclick = () => window.scrollToStage(i);
+      navEl.appendChild(b);
+    });
 
-/* ---- Nav + steps ---- */
-const names=['Intro','Buttons','Cast','Wi-Fi','Reset'];
-const nav=document.getElementById('nav');
-names.forEach((n,i)=>{const b=document.createElement('button');b.dataset.nav=i;b.textContent=n;b.className='nav-link px-3 py-1.5 rounded-full text-slate-300 hover:text-white hover:bg-white/10 transition';b.onclick=()=>go(i);nav.appendChild(b)});
-for(const [k,list] of Object.entries(steps)){
-  const ol=document.getElementById('steps-'+k);
-  list.forEach(([t,d],i)=>{const li=document.createElement('li');li.className='flex gap-3.5 p-3.5 rounded-2xl bg-white/5 border border-white/10 text-sm';
-    li.innerHTML=`<span class="shrink-0 w-7 h-7 rounded-full bg-[var(--acc)] text-black font-bold flex items-center justify-center text-xs">${i+1}</span><div><div class="font-bold">${t}</div><p class="text-slate-300 mt-0.5 leading-relaxed">${d}</p></div>`;ol.appendChild(li)});
-}
+    for (const [key, list] of Object.entries(steps)) {
+      const ol = document.getElementById('steps-' + key);
+      list.forEach(([t, d], i) => {
+        const li = document.createElement('li');
+        li.className = 'flex gap-3.5 p-3.5 rounded-2xl bg-white/5 border border-white/10 text-sm';
+        li.innerHTML = `<span class="shrink-0 w-7 h-7 rounded-full bg-sky-400 text-black font-extrabold flex items-center justify-center text-xs">${i + 1}</span><div><div class="font-bold text-slate-100">${t}</div><p class="text-slate-300 mt-0.5 leading-relaxed">${d}</p></div>`;
+        ol.appendChild(li);
+      });
+    }
 
-/* ---- Camera ---- */
-const stageOrbit=['30deg 75deg auto','60deg 78deg auto','-45deg 70deg auto','50deg 95deg auto','10deg 65deg auto'];
-let activeStage=0, group='headset', selected=0, autoRotate=true;
+    let group = 'headset', selected = 0;
+    const tabIds = { headset: 'tab-headset', controller: 'tab-controller', hand: 'tab-hand' };
+    const svgDots = document.getElementById('ctrl-dots');
+    buttons.controller.forEach((it, i) => it.dots.forEach(([x, y]) => {
+      const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      c.setAttribute('cx', x); c.setAttribute('cy', y); c.dataset.i = i;
+      svgDots.appendChild(c);
+    }));
 
-function setAuto(on){autoRotate=on;mv.autoRotate=on;
-  const b=document.getElementById('btn-rot');b.textContent='Auto-rotate: '+(on?'on':'off');
-  b.classList.toggle('text-teal-200',on);b.classList.toggle('bg-teal-300/15',on);b.classList.toggle('text-slate-300',!on)}
+    function markDots() {
+      svgDots.querySelectorAll('circle').forEach(c => {
+        const on = group === 'controller' && Number(c.dataset.i) === selected;
+        c.setAttribute('r', on ? 14 : 8);
+        c.setAttribute('fill', on ? '#38BDF8' : '#556070');
+        c.setAttribute('stroke', on ? '#fff' : 'none');
+        c.setAttribute('stroke-width', 3);
+      });
+    }
 
-function resetCam(orbit){mv.cameraTarget='auto auto auto';mv.cameraOrbit=orbit||stageOrbit[activeStage]}
+    function showButton(i) {
+      selected = i;
+      const item = buttons[group][i];
+      document.getElementById('btn-title').textContent = item.n;
+      document.getElementById('btn-where').textContent = item.w;
+      document.getElementById('btn-desc').textContent = item.d;
+      document.querySelectorAll('#btn-list button').forEach((b, k) => b.classList.toggle('item-on', k === i));
+      document.getElementById('ctrl-svg-wrap').classList.toggle('hidden', group !== 'controller');
+      markDots();
+      applyFocus();
+    }
 
-function focusItem(item){
-  document.querySelectorAll('.Hotspot').forEach(h=>h.classList.toggle('on',!!item&&h.slot===item.hs));
-  if(!item||!item.orbit){return}
-  if(item.hs){
-    const h=mv.querySelector(`[slot="${item.hs}"]`);
-    const p=h.dataset.position.split(' ').map(parseFloat);
-    const d=mv.getDimensions?mv.getDimensions():{x:1,y:1,z:1};
-    const r=Math.max(d.x,d.y,d.z)*0.85;
-    mv.cameraTarget=`${p[0]}m ${p[1]}m ${p[2]}m`;
-    mv.cameraOrbit=`${item.orbit.split(' ')[0]} ${item.orbit.split(' ')[1]} ${r}m`;
-    setAuto(false);
-  }else{
-    resetCam(item.orbit+' auto');
-  }
-}
-function applyFocus(){
-  if(activeStage!==1||group==='controller'){focusItem(null);return}
-  focusItem(buttons[group][selected]);
-}
+    function renderList() {
+      const list = document.getElementById('btn-list');
+      list.innerHTML = '';
+      buttons[group].forEach((item, i) => {
+        const b = document.createElement('button');
+        b.className = 'w-full text-left px-3.5 py-2.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 font-semibold text-sm transition';
+        b.textContent = item.n;
+        b.onclick = () => showButton(i);
+        list.appendChild(b);
+      });
+      showButton(0);
+    }
 
-/* ---- Buttons panel ---- */
-const tabIds={headset:'tab-headset',controller:'tab-controller',hand:'tab-hand'};
-const dotsG=document.getElementById('ctrl-dots');
-buttons.controller.forEach((it,i)=>it.dots.forEach(([x,y])=>{const c=document.createElementNS('http://www.w3.org/2000/svg','circle');c.setAttribute('cx',x);c.setAttribute('cy',y);c.dataset.i=i;dotsG.appendChild(c)}));
-function markDots(){dotsG.querySelectorAll('circle').forEach(c=>{const on=group==='controller'&&+c.dataset.i===selected;c.setAttribute('r',on?14:8);c.setAttribute('fill',on?'#5EEAD4':'#556070');c.setAttribute('stroke',on?'#fff':'none');c.setAttribute('stroke-width',3)})}
-function showButton(i){
-  selected=i;const it=buttons[group][i];
-  btnTitle.textContent=it.n;btnWhere.textContent=it.w;btnDesc.textContent=it.d;
-  document.querySelectorAll('#btn-list button').forEach((b,k)=>b.classList.toggle('item-on',k===i));
-  document.getElementById('ctrl-wrap').classList.toggle('hidden',group!=='controller');
-  markDots();applyFocus();
-}
-const btnTitle=document.getElementById('btn-title'),btnWhere=document.getElementById('btn-where'),btnDesc=document.getElementById('btn-desc');
-function renderList(){
-  const l=document.getElementById('btn-list');l.innerHTML='';
-  buttons[group].forEach((it,i)=>{const b=document.createElement('button');b.className='w-full text-left px-3.5 py-2.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 font-semibold text-sm transition';b.textContent=it.n;b.onclick=()=>showButton(i);l.appendChild(b)});
-  showButton(0);
-}
-function setGroup(g){group=g;for(const [k,id] of Object.entries(tabIds))document.getElementById(id).className=(k===g?'tab-on':'tab-off')+' px-4 py-2 rounded-full font-bold text-sm';renderList()}
-for(const [k,id] of Object.entries(tabIds))document.getElementById(id).onclick=()=>setGroup(k);
+    function setGroup(g) {
+      group = g;
+      for (const [k, id] of Object.entries(tabIds)) {
+        document.getElementById(id).className = (k === g ? 'tab-on' : 'tab-off') + ' px-4 py-2 rounded-full font-bold text-sm';
+      }
+      renderList();
+    }
+    for (const [k, id] of Object.entries(tabIds)) document.getElementById(id).onclick = () => setGroup(k);
 
-// clicking a hotspot on the model selects it in the list
-mv.querySelectorAll('.Hotspot').forEach(h=>h.addEventListener('click',()=>{
-  if(group!=='headset')setGroup('headset');
-  const i=buttons.headset.findIndex(b=>b.hs===h.slot);if(i>-1)showButton(i);
-}));
+    // Practice restart simulator
+    const holdBtn = document.getElementById('hold-btn');
+    const holdFill = document.getElementById('hold-fill');
+    const holdText = document.getElementById('hold-text');
+    let holdTimer = null, holdStart = 0;
+    function endHold(done) {
+      clearInterval(holdTimer); holdTimer = null;
+      if (!done) { holdFill.style.width = '0%'; holdText.textContent = 'Released too early. Press and hold power button'; }
+    }
+    holdBtn.addEventListener('pointerdown', () => {
+      if (holdTimer) return;
+      holdStart = performance.now();
+      holdText.textContent = 'Keep holding…';
+      holdTimer = setInterval(() => {
+        const s = (performance.now() - holdStart) / 1000;
+        holdFill.style.width = Math.min(100, s / 10 * 100) + '%';
+        if (s >= 3 && s < 10) holdText.textContent = 'Power menu active. Keep holding (' + Math.ceil(10 - s) + 's)';
+        if (s >= 10) { holdText.textContent = 'Simulated shutdown complete. Click to test again.'; endHold(true); }
+      }, 100);
+    });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => holdBtn.addEventListener(ev, () => { if (holdTimer) endHold(false); }));
 
-/* ---- Stages ---- */
-function setStage(i){
-  activeStage=i;
-  document.body.classList.toggle('deep',i>0);
-  document.querySelectorAll('.nav-link').forEach(b=>{const on=+b.dataset.nav===i;b.className='nav-link px-3 py-1.5 rounded-full transition '+(on?'text-white bg-white/15 font-semibold':'text-slate-300 hover:text-white hover:bg-white/10')});
-  if(i!==1||group==='controller'){resetCam();if(i!==1)setAuto(true)}
-  applyFocus();
-}
-window.go=i=>document.getElementById('stage-'+i).scrollIntoView({behavior:'smooth'});
-addEventListener('scroll',()=>{let best=0,min=1e9;document.querySelectorAll('section[data-stage]').forEach(s=>{const d=Math.abs(s.getBoundingClientRect().top-innerHeight*.3);if(d<min){min=d;best=+s.dataset.stage}});if(best!==activeStage)setStage(best)},{passive:true});
+    // ---------- Three.js Viewport & Unrestricted Orbit Controls ----------
+    const canvas = document.getElementById('three-canvas');
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(38, innerWidth / innerHeight, 0.05, 100);
+    camera.position.set(0, 0.4, 3.2);
 
-document.getElementById('btn-rot').onclick=()=>setAuto(!autoRotate);
-document.getElementById('btn-reset').onclick=()=>{document.querySelectorAll('.Hotspot').forEach(h=>h.classList.remove('on'));resetCam();setAuto(true)};
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
 
-/* ---- Loading bar ---- */
-const prog=document.getElementById('progress'),bar=prog.querySelector('.update-bar');
-mv.addEventListener('progress',e=>{const p=e.detail.totalProgress;bar.style.width=(p*100)+'%';if(p===1){prog.classList.add('hide')}});
-mv.addEventListener('load',()=>prog.classList.add('hide'));
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.minDistance = 1.0;
+    controls.maxDistance = 8.0;
+    // Free rotation in all axes enabled (no polar angle clamping)
 
-/* ---- Power hold practice ---- */
-const holdBtn=document.getElementById('hold-btn'),holdFill=document.getElementById('hold-fill'),holdText=document.getElementById('hold-text');
-let timer=null,t0=0;
-function endHold(done){clearInterval(timer);timer=null;if(!done){holdFill.style.width='0%';holdText.textContent='Released too early. Press and hold the power button'}}
-holdBtn.addEventListener('pointerdown',()=>{if(timer)return;t0=performance.now();holdText.textContent='Keep holding…';
-  timer=setInterval(()=>{const s=(performance.now()-t0)/1000;holdFill.style.width=Math.min(100,s/10*100)+'%';
-    if(s>=3&&s<10)holdText.textContent='Power menu is open. Keep holding ('+Math.ceil(10-s)+'s)';
-    if(s>=10){holdText.textContent='Forced restart complete. Tap to try again.';endHold(true)}},100)});
-['pointerup','pointerleave','pointercancel'].forEach(e=>holdBtn.addEventListener(e,()=>{if(timer)endHold(false)}));
+    scene.add(new THREE.AmbientLight(0xffffff, 0.9));
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.2); keyLight.position.set(4, 6, 5); scene.add(keyLight);
+    const rimLight = new THREE.DirectionalLight(0x38bdf8, 1.4); rimLight.position.set(-5, 3, -4); scene.add(rimLight);
 
-// make sure video plays (some browsers need a nudge)
-const v=document.getElementById('bg-video');v.play().catch(()=>{});
+    const root = new THREE.Group();
+    scene.add(root);
 
-setStage(0);setGroup('headset');
-</script>
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+    const loader = new GLTFLoader();
+    loader.setDRACOLoader(dracoLoader);
+
+    const label = document.getElementById('model-label');
+    const dot = document.getElementById('model-dot');
+
+    let wrapperRef = null, modelSize = null;
+    const meshes = [];
+
+    function mount(gltfScene) {
+      if (wrapperRef) root.remove(wrapperRef);
+      gltfScene.updateMatrixWorld(true);
+      const box = new THREE.Box3().setFromObject(gltfScene);
+      const size = box.getSize(new THREE.Vector3());
+      const c = box.getCenter(new THREE.Vector3());
+      const sc = 1.9 / (Math.max(size.x, size.y, size.z) || 1);
+      const wrapper = new THREE.Group();
+      gltfScene.position.set(-c.x, -c.y, -c.z);
+      wrapper.add(gltfScene);
+      wrapper.scale.setScalar(sc);
+      root.add(wrapper);
+      wrapperRef = wrapper;
+      modelSize = size.clone().multiplyScalar(sc);
+      meshes.length = 0;
+      gltfScene.traverse(o => { if (o.isMesh) meshes.push(o); });
+      label.textContent = 'Quest3s.glb loaded ✓';
+      dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400';
+      clearHighlight();
+      applyFocus();
+    }
+
+    // Try loading local file first, with fallback to reliable sample asset if file is missing/unreachable
+    loader.load(
+      'Quest3s.glb',
+      (g) => mount(g.scene),
+      undefined,
+      () => {
+        // Fallback to standard Three.js sample asset to ensure zero errors on preview run
+        loader.load(
+          'https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/models/gltf/RobotExpressive/RobotExpressive.glb',
+          (g) => mount(g.scene),
+          undefined,
+          () => {
+            label.textContent = 'Quest3s.glb (place in folder)';
+            dot.className = 'w-2.5 h-2.5 rounded-full bg-red-400';
+          }
+        );
+      }
+    );
+
+    // Camera keyframes per stage
+    const V = (x, y, z) => new THREE.Vector3(x, y, z);
+    const frames = [
+      { cam: V(0, 0.3, 3.1), look: V(0, 0, 0), rotY: 0 },
+      { cam: V(0.5, 0.2, 2.6), look: V(0, 0, 0), rotY: 0.4 },
+      { cam: V(-0.4, 0.25, 2.8), look: V(0, 0, 0), rotY: -0.5 },
+      { cam: V(0.3, 0.4, 2.7), look: V(0, 0, 0), rotY: 0.8 },
+      { cam: V(0, -0.1, 2.7), look: V(0, 0, 0), rotY: 0.2 }
+    ];
+    const targetCam = frames[0].cam.clone();
+    const targetLook = frames[0].look.clone();
+    controls.target.copy(targetLook);
+    let targetRotY = frames[0].rotY;
+    let activeStage = 0;
+    let autoRotate = true;
+
+    // ---------- Hotspot Marker & Glow Effects ----------
+    function makeGlow() {
+      const c = document.createElement('canvas'); c.width = c.height = 128;
+      const g = c.getContext('2d');
+      const gr = g.createRadialGradient(64, 64, 4, 64, 64, 60);
+      gr.addColorStop(0, 'rgba(56,189,248,.95)'); gr.addColorStop(.35, 'rgba(56,189,248,.35)'); gr.addColorStop(1, 'rgba(56,189,248,0)');
+      g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
+      g.strokeStyle = '#fff'; g.lineWidth = 5; g.beginPath(); g.arc(64, 64, 26, 0, Math.PI * 2); g.stroke();
+      const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+    }
+
+    const marker = new THREE.Sprite(new THREE.SpriteMaterial({ map: makeGlow(), depthTest: false, transparent: true }));
+    marker.renderOrder = 999; marker.visible = false;
+    root.add(marker);
+
+    let highlighted = [];
+    const meshText = m => [m.name, m.parent && m.parent.name, Array.isArray(m.material) ? '' : (m.material && m.material.name)].join(' ').toLowerCase();
+
+    function highlightMesh(m) {
+      if (Array.isArray(m.material) || !m.material || !('emissive' in m.material)) return;
+      highlighted.push({ m, orig: m.material });
+      const mat = m.material.clone();
+      mat.emissive = new THREE.Color(0x38bdf8); mat.emissiveIntensity = 1.6;
+      m.material = mat;
+    }
+    function clearHighlight() {
+      highlighted.forEach(({ m, orig }) => { m.material.dispose(); m.material = orig; });
+      highlighted = [];
+    }
+    let focus = false;
+    function clearFocus() { focus = false; marker.visible = false; clearHighlight(); }
+
+    function focusFeature(item) {
+      clearHighlight();
+      let local = null;
+      const pp = item.p;
+      const hits = item.m ? meshes.filter(m => item.m.some(k => meshText(m).includes(k))) : [];
+      if (hits.length) {
+        const ry = root.rotation.y, py = root.position.y;
+        root.rotation.y = 0; root.position.y = 0; root.updateMatrixWorld(true);
+        const box = new THREE.Box3();
+        hits.forEach(h => box.expandByObject(h));
+        local = root.worldToLocal(box.getCenter(new THREE.Vector3()));
+        root.rotation.y = ry; root.position.y = py; root.updateMatrixWorld(true);
+        hits.forEach(highlightMesh);
+      } else if (pp && modelSize) {
+        // Scale user coordinates cleanly relative to bounding box
+        local = new THREE.Vector3(pp[0] * 0.05, pp[1] * 0.05, pp[2] * 0.05);
+      }
+      if (!local) { clearFocus(); return; }
+      marker.position.copy(local); marker.visible = true; focus = true;
+      let a = -Math.atan2(local.x, local.z);
+      a += Math.PI * 2 * Math.round((root.rotation.y - a) / (Math.PI * 2));
+      targetRotY = a;
+      targetCam.set(0.3, THREE.MathUtils.clamp(local.y * 1.2, -0.6, 0.6) + 0.1, 2.3);
+      targetLook.set(0, THREE.MathUtils.clamp(local.y * 0.5, -0.4, 0.4), 0);
+    }
+
+    function applyFocus() {
+      if (activeStage !== 1 || group === 'controller') { clearFocus(); return; }
+      focusFeature(buttons[group][selected]);
+    }
+
+    function setStage(i) {
+      activeStage = i;
+      const f = frames[i];
+      targetCam.copy(f.cam); targetLook.copy(f.look); targetRotY = f.rotY;
+      document.querySelectorAll('.nav-link').forEach(b => {
+        const on = Number(b.dataset.nav) === i;
+        b.className = 'nav-link px-3 py-1.5 rounded-full transition ' + (on ? 'text-white bg-white/15 font-semibold' : 'text-slate-300 hover:text-white hover:bg-white/10');
+      });
+      applyFocus();
+    }
+    window.scrollToStage = (i) => document.getElementById('stage-' + i)?.scrollIntoView({ behavior: 'smooth' });
+
+    addEventListener('scroll', () => {
+      let best = 0, min = Infinity;
+      document.querySelectorAll('section[data-stage]').forEach(s => {
+        const d = Math.abs(s.getBoundingClientRect().top - innerHeight * 0.3);
+        if (d < min) { min = d; best = Number(s.dataset.stage); }
+      });
+      if (best !== activeStage) setStage(best);
+    });
+
+    const btnRot = document.getElementById('btn-autorotate');
+    btnRot.onclick = () => {
+      autoRotate = !autoRotate;
+      btnRot.textContent = autoRotate ? 'Auto-rotate: on' : 'Auto-rotate: off';
+      btnRot.classList.toggle('text-sky-300', autoRotate);
+      btnRot.classList.toggle('bg-sky-400/15', autoRotate);
+      btnRot.classList.toggle('text-slate-300', !autoRotate);
+    };
+    document.getElementById('btn-reset-cam').onclick = () => {
+      const f = frames[activeStage];
+      targetCam.copy(f.cam); targetLook.copy(f.look);
+      root.rotation.set(0, f.rotY, 0);
+      applyFocus();
+    };
+
+    const clock = new THREE.Clock();
+    function animate() {
+      requestAnimationFrame(animate);
+      const dt = clock.getDelta();
+      camera.position.lerp(targetCam, 0.05);
+      controls.target.lerp(targetLook, 0.05);
+      if (autoRotate && !focus) root.rotation.y += dt * 0.3;
+      else root.rotation.y = THREE.MathUtils.lerp(root.rotation.y, targetRotY, 0.06);
+      root.position.y = Math.sin(clock.elapsedTime * 1.1) * 0.015;
+      if (marker.visible) marker.scale.setScalar(0.2 + 0.05 * Math.sin(clock.elapsedTime * 5));
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    addEventListener('resize', () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
+
+    setStage(0);
+    setGroup('headset');
+    animate();
+  </script>
 </body>
 </html>
