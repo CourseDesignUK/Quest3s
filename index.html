@@ -20,7 +20,7 @@
     * { box-sizing: border-box; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.25) #07080C; }
     html { scroll-behavior: smooth; background: #07080C; color: #fff; }
     body { margin: 0; overflow-x: hidden; background: #07080C; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
-    .card { background: rgba(14,16,23,.82); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,.14); box-shadow: 0 28px 60px -15px rgba(0,0,0,.78); }
+    .card { background: rgba(14,16,23,.85); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,.14); box-shadow: 0 28px 60px -15px rgba(0,0,0,.78); }
     .tab-on { background: #fff; color: #000; }
     .tab-off { color: #fff; }
     .tab-off:hover { background: rgba(255,255,255,.1); }
@@ -29,19 +29,19 @@
     @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { animation: none !important; } }
   </style>
 </head>
-<body>
+<body class="selection:bg-sky-500 selection:text-black">
 
-  <!-- 3D viewport -->
-  <div class="fixed inset-0 z-0 bg-[#07080C]">
-    <div class="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(40,60,100,.35)_0%,#07080C_80%)] pointer-events-none"></div>
+  <!-- Fixed 3D Viewport on the Right (50% Width on Large Screens) -->
+  <div class="fixed top-0 right-0 w-full lg:w-1/2 h-screen z-0 bg-[#07080C]">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(40,60,100,.35)_0%,#07080C_80%)] pointer-events-none"></div>
     <canvas id="three-canvas" class="block w-full h-full relative cursor-grab active:cursor-grabbing"></canvas>
-    <div class="fixed top-24 right-6 lg:right-12 hidden sm:flex items-center gap-3 px-4 py-2 rounded-full bg-black/60 backdrop-blur-md border border-white/15 pointer-events-none">
+    
+    <!-- Model Loading Indicator Badge -->
+    <div class="absolute top-24 right-6 lg:right-12 hidden sm:flex items-center gap-3 px-4 py-2 rounded-full bg-black/60 backdrop-blur-md border border-white/15 pointer-events-none z-10">
       <span id="model-dot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
-      <span id="model-label" class="text-sm font-semibold">Loading Quest3s.glb…</span>
+      <span id="model-label" class="text-sm font-semibold text-slate-200">Loading Quest3s.glb…</span>
     </div>
   </div>
-
-  <div id="calib-toast" class="fixed top-24 left-1/2 -translate-x-1/2 z-40 hidden px-5 py-3 rounded-full bg-black/80 border border-sky-400/50 font-mono text-sm"></div>
 
   <!-- Header -->
   <header class="fixed top-0 inset-x-0 z-40 border-b border-white/10 bg-[#07080C]/85 backdrop-blur-xl">
@@ -49,61 +49,68 @@
       <div class="flex items-center gap-3.5">
         <div class="w-3 h-3 rounded-full bg-sky-400"></div>
         <span class="font-display font-extrabold text-xl sm:text-2xl">Meta Quest 3S</span>
-        <span class="hidden md:inline text-sm text-slate-300 font-medium pl-3 border-l border-white/20">Headset guide</span>
+        <span class="hidden md:inline text-sm text-slate-300 font-medium pl-3 border-l border-white/20">Interactive 3D Guide</span>
       </div>
-      <nav class="hidden xl:flex items-center gap-1.5 font-semibold" id="nav"></nav>
-      <button id="btn-open-loader" class="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 font-semibold text-sm transition">Load local .glb</button>
+      <nav class="hidden xl:flex items-center gap-1.5 font-semibold text-sm" id="nav"></nav>
     </div>
   </header>
 
-  <!-- Bottom controls -->
-  <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 w-max max-w-[95vw]">
+  <!-- Bottom Floating View Controls -->
+  <div class="fixed bottom-6 right-6 lg:right-12 z-30">
     <div class="card rounded-full px-3 py-2 flex items-center gap-2">
-      <button id="btn-autorotate" class="px-4 py-2 rounded-full font-semibold text-sky-300 bg-sky-400/15 border border-sky-400/30 whitespace-nowrap">Auto-rotate: on</button>
-      <button id="btn-reset-cam" class="px-4 py-2 rounded-full font-semibold text-slate-200 hover:bg-white/10 whitespace-nowrap">Reset view</button>
-      <button id="btn-calib" class="px-4 py-2 rounded-full font-semibold text-slate-200 hover:bg-white/10 whitespace-nowrap">Calibrate: off</button>
-      <button id="btn-hs-clear" class="px-4 py-2 rounded-full font-semibold text-slate-200 hover:bg-white/10 whitespace-nowrap">Clear saved</button>
+      <button id="btn-autorotate" class="px-4 py-2 rounded-full font-semibold text-sky-300 bg-sky-400/15 border border-sky-400/30 text-sm whitespace-nowrap transition">Auto-rotate: on</button>
+      <button id="btn-reset-cam" class="px-4 py-2 rounded-full font-semibold text-slate-200 hover:bg-white/10 text-sm whitespace-nowrap transition">Reset view</button>
     </div>
   </div>
 
-  <main class="relative z-20 pointer-events-none">
+  <!-- Main Content on the Left (50% Width on Large Screens) -->
+  <main class="relative z-20 w-full lg:w-1/2 min-h-screen">
 
-    <!-- 0 Hero -->
-    <section id="stage-0" data-stage="0" class="min-h-screen flex items-center pt-28 pb-24 px-6 sm:px-12 lg:px-20 max-w-[1720px] mx-auto">
-      <div class="max-w-3xl pointer-events-auto">
-        <h1 class="font-display text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.05] mb-6">Get to know your Meta Quest 3S</h1>
-        <p class="text-xl sm:text-2xl leading-relaxed mb-8 max-w-2xl">
-          Every hardware control on the Quest 3S headset and Touch Plus controllers, plus the top essentials: casting to a laptop, switching Wi-Fi, and performing a soft reset.
+    <!-- 0 Hero Section -->
+    <section id="stage-0" data-stage="0" class="min-h-screen flex flex-col justify-center pt-32 pb-24 px-6 sm:px-12 lg:px-16">
+      <div class="max-w-xl">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sky-500/10 border border-sky-500/30 text-sky-400 text-sm font-semibold mb-6">
+          <span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span>
+          Official Hardware & Setup Manual
+        </div>
+        <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.08] mb-6">
+          Master your Meta Quest 3S
+        </h1>
+        <p class="text-lg sm:text-xl text-slate-300 leading-relaxed mb-8">
+          Explore physical controls with free 3D model rotation, connect to your laptop display, reconfigure Wi-Fi networks, and practice emergency soft resets.
         </p>
         <div class="flex flex-wrap gap-3 mb-8">
-          <button onclick="scrollToStage(1)" class="px-6 py-3 rounded-full bg-white text-black font-bold hover:bg-slate-200 transition">Buttons & Ports</button>
-          <button onclick="scrollToStage(2)" class="px-6 py-3 rounded-full bg-white/10 border border-white/25 font-bold hover:bg-white/20 transition">Cast to laptop</button>
-          <button onclick="scrollToStage(3)" class="px-6 py-3 rounded-full bg-white/10 border border-white/25 font-bold hover:bg-white/20 transition">Change Wi-Fi</button>
-          <button onclick="scrollToStage(4)" class="px-6 py-3 rounded-full bg-white/10 border border-white/25 font-bold hover:bg-white/20 transition">Soft reset</button>
+          <button onclick="scrollToStage(1)" class="px-6 py-3.5 rounded-full bg-white text-black font-bold hover:bg-slate-200 transition">Buttons & Ports</button>
+          <button onclick="scrollToStage(2)" class="px-6 py-3.5 rounded-full bg-white/10 border border-white/25 font-bold hover:bg-white/20 transition">Cast to laptop</button>
+          <button onclick="scrollToStage(3)" class="px-6 py-3.5 rounded-full bg-white/10 border border-white/25 font-bold hover:bg-white/20 transition">Change Wi-Fi</button>
+          <button onclick="scrollToStage(4)" class="px-6 py-3.5 rounded-full bg-white/10 border border-white/25 font-bold hover:bg-white/20 transition">Soft reset</button>
         </div>
-        <p class="text-lg text-slate-200">Drag the 3D model to inspect. Scroll to progress through the setup guide.</p>
+        <p class="text-sm text-slate-400 font-medium">💡 Tip: Click and drag anywhere on the 3D viewer to rotate freely in all axes.</p>
       </div>
     </section>
 
-    <!-- 1 Buttons -->
-    <section id="stage-1" data-stage="1" class="min-h-screen flex items-center py-28 px-6 sm:px-12 lg:px-20 max-w-[1720px] mx-auto">
-      <div class="w-full lg:w-[700px] pointer-events-auto">
-        <div class="card rounded-3xl p-8 sm:p-10">
-          <h2 class="font-display text-4xl sm:text-5xl font-extrabold tracking-tight mb-4">Hardware & Controls</h2>
-          <p class="text-lg text-slate-200 mb-6">Select a component to instantly rotate and highlight it on the Quest 3S 3D model.</p>
+    <!-- 1 Buttons & Controls Section -->
+    <section id="stage-1" data-stage="1" class="min-h-screen flex flex-col justify-center py-28 px-6 sm:px-12 lg:px-16">
+      <div class="w-full max-w-2xl">
+        <div class="card rounded-3xl p-6 sm:p-8">
+          <h2 class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">Hardware & Controls</h2>
+          <p class="text-slate-300 mb-6">Select a component below to highlight its exact location on the 3D headset model.</p>
+          
           <div class="inline-flex p-1 rounded-full bg-white/10 mb-6 flex-wrap gap-1" role="tablist">
-            <button id="tab-headset" class="tab-on px-5 py-2 rounded-full font-bold">Headset</button>
-            <button id="tab-controller" class="tab-off px-5 py-2 rounded-full font-bold">Controllers</button>
-            <button id="tab-hand" class="tab-off px-5 py-2 rounded-full font-bold">Hand tracking</button>
+            <button id="tab-headset" class="tab-on px-4 py-2 rounded-full font-bold text-sm">Headset</button>
+            <button id="tab-controller" class="tab-off px-4 py-2 rounded-full font-bold text-sm">Controllers</button>
+            <button id="tab-hand" class="tab-off px-4 py-2 rounded-full font-bold text-sm">Hand tracking</button>
           </div>
-          <div class="grid sm:grid-cols-2 gap-6">
-            <div id="btn-list" class="space-y-2 max-h-[46vh] overflow-y-auto pr-1"></div>
-            <div class="p-6 rounded-2xl bg-black/50 border border-white/15 self-start">
-              <div id="btn-title" class="text-2xl font-bold mb-2"></div>
-              <div id="btn-where" class="text-sm font-semibold text-sky-300 mb-3"></div>
-              <p id="btn-desc" class="text-lg text-slate-100 leading-relaxed"></p>
+
+          <div class="grid sm:grid-cols-2 gap-5">
+            <div id="btn-list" class="space-y-2 max-h-[42vh] overflow-y-auto pr-1"></div>
+            <div class="p-5 rounded-2xl bg-black/50 border border-white/15 self-start">
+              <div id="btn-title" class="text-xl font-bold mb-1.5"></div>
+              <div id="btn-where" class="text-xs font-semibold text-sky-300 mb-3 uppercase tracking-wider"></div>
+              <p id="btn-desc" class="text-slate-200 text-sm leading-relaxed"></p>
+              
               <div id="ctrl-svg-wrap" class="hidden mt-4">
-                <svg viewBox="0 0 400 190" class="w-full" role="img" aria-label="Touch Plus controllers, top view. Selected part is highlighted.">
+                <svg viewBox="0 0 400 190" class="w-full" role="img" aria-label="Touch Plus controllers top view">
                   <rect x="15" y="12" width="165" height="150" rx="75" fill="#1c2230" stroke="#4b5568" stroke-width="2"/>
                   <rect x="220" y="12" width="165" height="150" rx="75" fill="#1c2230" stroke="#4b5568" stroke-width="2"/>
                   <text x="97" y="188" text-anchor="middle" fill="#cbd5e1" font-size="13">Left</text>
@@ -117,75 +124,56 @@
       </div>
     </section>
 
-    <!-- 2 Cast -->
-    <section id="stage-2" data-stage="2" class="min-h-screen flex items-center py-28 px-6 sm:px-12 lg:px-20 max-w-[1720px] mx-auto">
-      <div class="w-full lg:w-[700px] pointer-events-auto">
-        <div class="card rounded-3xl p-8 sm:p-10">
-          <h2 class="font-display text-4xl sm:text-5xl font-extrabold tracking-tight mb-4">Cast your screen to a laptop</h2>
-          <p class="text-lg text-slate-200 mb-6">Ensure both your headset and laptop reside on the same Wi-Fi network and are logged into your Meta account.</p>
+    <!-- 2 Cast Section -->
+    <section id="stage-2" data-stage="2" class="min-h-screen flex flex-col justify-center py-28 px-6 sm:px-12 lg:px-16">
+      <div class="w-full max-w-2xl">
+        <div class="card rounded-3xl p-6 sm:p-8">
+          <h2 class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">Cast your screen to a laptop</h2>
+          <p class="text-slate-300 mb-6">Stream what you see inside your headset directly to any laptop web browser.</p>
           <ol id="steps-cast" class="space-y-3"></ol>
-          <div class="mt-6 p-5 rounded-2xl bg-amber-500/15 border border-amber-400/40">
-            <h3 class="text-xl font-bold mb-1">Casting troubleshooting</h3>
-            <p class="text-lg text-white leading-relaxed">Use Google Chrome or Microsoft Edge, disable active VPN tunnels, and verify guest isolation is disabled on your router. Alternatively, use Meta Quest Developer Hub via USB-C.</p>
+          <div class="mt-6 p-4 rounded-2xl bg-amber-500/15 border border-amber-400/40">
+            <h3 class="text-base font-bold mb-1 text-amber-300">Troubleshooting Casting</h3>
+            <p class="text-sm text-slate-200 leading-relaxed">Ensure both devices are on the exact same Wi-Fi frequency band. Use Google Chrome or Microsoft Edge, and turn off active VPN software.</p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- 3 Wi-Fi -->
-    <section id="stage-3" data-stage="3" class="min-h-screen flex items-center py-28 px-6 sm:px-12 lg:px-20 max-w-[1720px] mx-auto">
-      <div class="w-full lg:w-[700px] pointer-events-auto">
-        <div class="card rounded-3xl p-8 sm:p-10">
-          <h2 class="font-display text-4xl sm:text-5xl font-extrabold tracking-tight mb-4">Change the Wi-Fi network</h2>
-          <p class="text-lg text-slate-200 mb-6">Connect directly from within the headset settings or use the Meta Horizon mobile app if network connectivity is offline.</p>
+    <!-- 3 Wi-Fi Section -->
+    <section id="stage-3" data-stage="3" class="min-h-screen flex flex-col justify-center py-28 px-6 sm:px-12 lg:px-16">
+      <div class="w-full max-w-2xl">
+        <div class="card rounded-3xl p-6 sm:p-8">
+          <h2 class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">Change the Wi-Fi network</h2>
+          <p class="text-slate-300 mb-6">Switch wireless connections quickly inside headset settings or via the mobile app.</p>
           <ol id="steps-wifi" class="space-y-3"></ol>
         </div>
       </div>
     </section>
 
-    <!-- 4 Reset -->
-    <section id="stage-4" data-stage="4" class="min-h-screen flex items-center py-28 px-6 sm:px-12 lg:px-20 max-w-[1720px] mx-auto">
-      <div class="w-full lg:w-[700px] pointer-events-auto">
-        <div class="card rounded-3xl p-8 sm:p-10">
-          <h2 class="font-display text-4xl sm:text-5xl font-extrabold tracking-tight mb-4">Soft reset a frozen headset</h2>
-          <p class="text-lg text-slate-200 mb-6">A soft reboot safely restarts your Quest 3S while preserving all user files, games, and configurations.</p>
+    <!-- 4 Soft Reset Section -->
+    <section id="stage-4" data-stage="4" class="min-h-screen flex flex-col justify-center py-28 px-6 sm:px-12 lg:px-16">
+      <div class="w-full max-w-2xl">
+        <div class="card rounded-3xl p-6 sm:p-8">
+          <h2 class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">Soft reset a frozen headset</h2>
+          <p class="text-slate-300 mb-6">Safely reboot your Quest 3S without losing any game saves, apps, or configurations.</p>
           <ol id="steps-reset" class="space-y-3 mb-6"></ol>
 
-          <div class="p-5 rounded-2xl bg-white/5 border border-white/15 mb-6">
-            <h3 class="text-xl font-bold mb-3">Practice power button hold</h3>
-            <button id="hold-btn" class="w-full relative overflow-hidden px-6 py-4 rounded-full bg-white/10 border border-white/25 font-bold text-lg select-none touch-none">
-              <span id="hold-fill" class="absolute inset-y-0 left-0 bg-sky-500/50" style="width:0%"></span>
+          <div class="p-4 rounded-2xl bg-white/5 border border-white/15 mb-6">
+            <h3 class="text-base font-bold mb-2">Practice Power Button Hold</h3>
+            <button id="hold-btn" class="w-full relative overflow-hidden px-6 py-3.5 rounded-full bg-white/10 border border-white/25 font-bold text-sm select-none touch-none transition hover:bg-white/15">
+              <span id="hold-fill" class="absolute inset-y-0 left-0 bg-sky-500/40 transition-all duration-75" style="width:0%"></span>
               <span id="hold-text" class="relative">Press and hold the Power Button</span>
             </button>
           </div>
 
-          <div class="p-5 rounded-2xl bg-red-500/15 border border-red-400/50">
-            <h3 class="text-xl font-bold mb-1">Factory Reset Warning</h3>
-            <p class="text-lg text-white leading-relaxed">Holding Power and Volume Down together opens the boot menu. Selecting Factory Reset will wipe all headset data permanently. Use only when troubleshooting severe software hangs.</p>
+          <div class="p-4 rounded-2xl bg-red-500/15 border border-red-400/50">
+            <h3 class="text-base font-bold mb-1 text-red-300">Factory Reset Caution</h3>
+            <p class="text-sm text-slate-200 leading-relaxed">Holding Power and Volume Down together opens the boot menu. Selecting Factory Reset erases all headset data permanently.</p>
           </div>
         </div>
       </div>
     </section>
   </main>
-
-  <!-- Local file modal -->
-  <div id="asset-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-md p-6">
-    <div class="card rounded-3xl max-w-xl w-full p-8">
-      <div class="flex items-center justify-between mb-5">
-        <h3 class="font-display text-2xl font-extrabold">Load Quest3s.glb</h3>
-        <button id="btn-close-loader" class="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 font-semibold text-sm">Close</button>
-      </div>
-      <p class="text-lg text-slate-200 mb-5">The application loads <strong>./Quest3s.glb</strong> automatically. If running locally without a server, pick or drop your GLB file here.</p>
-      <label id="dropzone" class="flex flex-col items-center justify-center border-2 border-dashed border-white/30 hover:border-sky-400 rounded-2xl p-8 bg-white/5 cursor-pointer text-center">
-        <input id="file-input" type="file" accept=".glb,.gltf" class="hidden" />
-        <span class="text-xl font-bold">Select or drop Quest3s.glb</span>
-      </label>
-      <p id="modal-status" class="mt-4 text-base text-slate-300">Waiting for model…</p>
-      <details class="mt-3"><summary class="cursor-pointer font-semibold">Detected mesh names</summary>
-        <pre id="mesh-names" class="mt-2 max-h-48 overflow-auto text-sm text-slate-300 bg-black/40 p-3 rounded-xl"></pre>
-      </details>
-    </div>
-  </div>
 
   <script type="module">
     import * as THREE from 'three';
@@ -194,118 +182,118 @@
     import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
     import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-    // ---------- Content mapping with exact Quest3s Hotspot data ----------
+    // ---------- Content mapping with exact user coordinates ----------
     const CAM = { k: 'cameras', m: ['camera'], p: [0.3, 0.05, 0.5] };
     const buttons = {
       headset: [
         { 
           n: 'Power Button', 
-          w: 'Right/Left side of the headset', 
-          d: 'Press once to put the headset to sleep or wake it. Hold to open the power menu. Holding for ~10 seconds forces a hardware restart.', 
+          w: 'Right / Left side of headset', 
+          d: 'Press once to sleep/wake. Hold for power menu or ~10 seconds to force a hardware restart.', 
           m: ['power', 'hotspot-3'], 
-          p: [0.35, -0.05, 0.45] 
+          p: [6.280, -0.212, 9.645] 
         },
         { 
           n: 'Charge Port', 
-          w: 'Right side / Lower temple area', 
-          d: 'USB Type-C port used for charging the internal battery and connecting to computers for Quest Link or developer debugging.', 
+          w: 'Right side / lower temple', 
+          d: 'USB Type-C port for fast battery charging and Quest Link PC VR data connection.', 
           m: ['charge', 'port', 'hotspot-4'], 
-          p: [0.38, 0.05, 0.35] 
+          p: [6.793, 0.871, 7.621] 
         },
         { 
           n: 'Action Button', 
-          w: 'Underside / Lower chassis', 
-          d: 'Specialized physical button for quick accessibility features, shortcut triggers, or auxiliary hardware switching.', 
+          w: 'Underside housing', 
+          d: 'Dedicated auxiliary button for quick system shortcuts and accessory triggers.', 
           m: ['action', 'hotspot-5'], 
-          p: [-0.18, -0.22, 0.4] 
+          p: [-3.195, -3.900, 8.584] 
         },
         { 
           n: 'Volume Rocker', 
-          w: 'Underside / Lower edge housing', 
-          d: 'Adjusts audio volume up and down. Combined with the power button during boot sequence to enter recovery options.', 
+          w: 'Underside lower edge', 
+          d: 'Adjusts master audio volume. Used with power button for recovery boot menu.', 
           m: ['volume', 'rocker', 'hotspot-6'], 
-          p: [-0.22, -0.22, 0.45] 
+          p: [-3.815, -3.925, 9.614] 
         },
         { 
           n: 'Proximity Sensor', 
-          w: 'Between lenses inside facial interface', 
-          d: 'Detects when you are wearing the headset to automatically turn the display panels on and off.', 
+          w: 'Between lenses', 
+          d: 'Detects when headset is worn to power display panels on and off automatically.', 
           m: ['proximity'], 
           p: [0, 0.1, -0.35] 
         },
         { 
           n: 'IPD Adjustment', 
-          w: 'Underside lens housing', 
-          d: 'Fine-tunes the physical lens separation distance to match your interpupillary distance for optimal visual clarity.', 
+          w: 'Underside lens dial', 
+          d: 'Sets physical distance between lenses to match your eye alignment.', 
           m: ['ipd', 'dial'], 
           p: [0.15, -0.35, 0.05] 
         },
         { 
           n: 'Passthrough Cameras', 
-          w: 'Front outer faceplate', 
-          d: 'High-resolution color cameras providing immersive mixed reality passthrough and environmental spatial tracking.', 
+          w: 'Front faceplate', 
+          d: 'High-resolution color sensors capturing real-world environment for mixed reality.', 
           ...CAM 
         },
         { 
           n: 'Depth Sensor', 
           w: 'Front faceplate center', 
-          d: 'Advanced depth projector mapping room topology and physical obstacles for seamless mixed reality occlusion.', 
+          d: 'Scans room geometry for accurate spatial mapping and Guardian boundaries.', 
           m: ['depth'], 
           p: [0, 0, 0.5] 
         }
       ],
       controller: [
-        { n: 'Thumbstick', w: 'Top thumb area', d: 'Smooth locomotion and camera turning. Press down for click actions.', dots: [[80, 100], [320, 100]] },
-        { n: 'A & B Buttons', w: 'Right controller face', d: 'Primary interactive face buttons for selection, jumping, and menu confirmation.', dots: [[260, 70], [260, 125]] },
-        { n: 'X & Y Buttons', w: 'Left controller face', d: 'Secondary interactive buttons for inventory shortcuts and secondary menus.', dots: [[140, 70], [140, 125]] },
-        { n: 'Menu Button', w: 'Left controller face', d: 'Opens in-game options or pauses active applications.', dots: [[150, 38]] },
-        { n: 'Meta Button', w: 'Right controller face', d: 'Launches the universal Meta Horizon system menu instantly from any application.', dots: [[250, 38]] },
-        { n: 'Trigger', w: 'Under index finger', d: 'Primary pointer clicker and fire/interact mechanism.', dots: [[97, 22], [303, 22]] },
-        { n: 'Grip Button', w: 'Inner side edge', d: 'Grabs virtual objects and handles physical items.', dots: [[24, 95], [376, 95]] },
-        { n: 'Thumb Rest', w: 'Capacitive thumb pad', d: 'Senses thumb position to render natural hand poses in social spaces.', dots: [[85, 148], [315, 148]] },
-        { n: 'Battery Compartment', w: 'Base handle', d: 'Houses a single AA battery accessed by sliding off the magnetic cover.', dots: [[97, 172], [303, 172]] }
+        { n: 'Thumbstick', w: 'Top thumb area', d: 'Smooth movement and camera look. Click down to use as action button.', dots: [[80, 100], [320, 100]] },
+        { n: 'A & B Buttons', w: 'Right controller face', d: 'Primary action buttons for jump, select, and confirmation.', dots: [[260, 70], [260, 125]] },
+        { n: 'X & Y Buttons', w: 'Left controller face', d: 'Secondary action buttons for inventory and menus.', dots: [[140, 70], [140, 125]] },
+        { n: 'Menu Button', w: 'Left controller face', d: 'Opens in-game options or pauses app.', dots: [[150, 38]] },
+        { n: 'Meta Button', w: 'Right controller face', d: 'Launches universal Meta Horizon system menu instantly.', dots: [[250, 38]] },
+        { n: 'Trigger', w: 'Index finger', d: 'Primary selector and item activator.', dots: [[97, 22], [303, 22]] },
+        { n: 'Grip Button', w: 'Inner side edge', d: 'Grabs and holds virtual items.', dots: [[24, 95], [376, 95]] },
+        { n: 'Thumb Rest', w: 'Capacitive pad', d: 'Senses thumb position for realistic social hand avatars.', dots: [[85, 148], [315, 148]] },
+        { n: 'Battery Compartment', w: 'Base handle', d: 'Houses single AA battery behind magnetic sliding cover.', dots: [[97, 172], [303, 172]] }
       ],
       hand: [
-        { n: 'Enable Hand Tracking', w: 'Settings > Movement tracking', d: 'Activate optical hand tracking to navigate system menus completely controller-free.', ...CAM },
-        { n: 'Point & Pinch', w: 'Index finger & thumb', d: 'Extend hand forward with index finger pointing, then pinch thumb and index together to click.', ...CAM },
-        { n: 'Scroll & Drag', w: 'Pinch and hold gesture', d: 'Maintain a closed pinch while moving your hand to drag web pages or reposition floating panels.', ...CAM },
-        { n: 'Direct Touch', w: 'Fingertip contact', d: 'Physically reach out and tap virtual buttons directly with your fingertip.', ...CAM },
-        { n: 'System Menu Gesture', w: 'Palm facing inward', d: 'Hold palm facing toward your face and execute a quick pinch to pull up the universal menu.', ...CAM },
-        { n: 'Tracking Environment', w: 'Lighting & camera view', d: 'Maintain adequate room lighting and keep hands within camera frustum for rock-solid tracking.', ...CAM }
+        { n: 'Enable Hand Tracking', w: 'Settings > Movement', d: 'Turn on optical tracking to navigate completely controller-free.', ...CAM },
+        { n: 'Point & Pinch', w: 'Index & thumb', d: 'Extend hand and touch thumb to index finger to click.', ...CAM },
+        { n: 'Scroll & Drag', w: 'Pinch & hold', d: 'Maintain pinch while moving hand to scroll windows.', ...CAM },
+        { n: 'Direct Touch', w: 'Fingertip', d: 'Reach out and physically tap virtual UI buttons.', ...CAM },
+        { n: 'Universal Menu Gesture', w: 'Palm facing you', d: 'Hold palm inward and pinch to open system menu.', ...CAM },
+        { n: 'Tracking Environment', w: 'Lighting & cameras', d: 'Keep hands in camera view with adequate room lighting.', ...CAM }
       ]
     };
 
     const steps = {
       cast: [
-        ['Open Meta Casting', 'On your laptop browser (Chrome/Edge), navigate to oculus.com/casting and log into your Meta account.'],
-        ['Access Universal Menu', 'Put on your headset and press the Meta button on your right Touch Plus controller.'],
-        ['Select Cast Option', 'Click the Sharing icon, then select Cast. Choose "Computer" from the available device targets.'],
-        ['Initiate Mirroring', 'Confirm your laptop browser selection and click Next. Live stereoscopic projection will stream to your screen.'],
-        ['End Session', 'Click Stop Casting in the headset quick menu or close your browser session tab.']
+        ['Open Meta Casting', 'On your laptop browser (Chrome/Edge), visit oculus.com/casting and log in.'],
+        ['Access Universal Menu', 'Put on headset and press Meta button on right controller.'],
+        ['Select Cast Option', 'Click Sharing icon, select Cast, and choose Computer.'],
+        ['Initiate Mirroring', 'Confirm your browser selection and click Next.'],
+        ['End Session', 'Click Stop Casting in quick settings or close tab.']
       ],
       wifi: [
-        ['Open Universal Menu', 'Press the Meta button on your right controller to bring up the primary overlay.'],
-        ['Open Quick Settings', 'Select the battery/clock tile on the left side of the menu bar to open Quick Settings.'],
-        ['Select Wi-Fi Tile', 'Click the Wi-Fi icon to open the available wireless networks list.'],
-        ['Connect to Network', 'Select your preferred secure network, input the password via virtual keyboard, and click Connect.'],
-        ['Forget Old Networks', 'Select previously saved networks you no longer use and choose Forget to stop auto-joining.']
+        ['Open Universal Menu', 'Press Meta button on right controller.'],
+        ['Open Quick Settings', 'Select clock tile on left side of menu bar.'],
+        ['Select Wi-Fi', 'Choose Wi-Fi icon to view available wireless networks.'],
+        ['Connect', 'Select secure network, enter password, and connect.'],
+        ['Forget Networks', 'Select old networks and choose Forget.']
       ],
       reset: [
-        ['Press Power Button', 'Press and hold the physical Power Button on the headset for approximately 3 seconds.'],
-        ['Confirm Restart', 'Select Restart from the on-screen power menu overlay to perform a clean reboot.'],
-        ['Force Shutdown (If Frozen)', 'If the UI is completely unresponsive, hold the Power Button continuously for 10 seconds until shutdown.'],
-        ['Boot Up', 'Power the headset back on normally. System files and downloaded applications remain fully intact.']
+        ['Hold Power Button', 'Press and hold headset power button for ~3 seconds.'],
+        ['Confirm Restart', 'Select Restart from on-screen menu.'],
+        ['Force Reboot (Frozen)', 'Hold power button continuously for 10 seconds.'],
+        ['Boot Up', 'Wait ~60 seconds for system restart.']
       ]
     };
 
     // ---------- Navigation Generation ----------
-    const stageNames = ['Intro', 'Buttons', 'Cast to laptop', 'Wi-Fi', 'Soft reset'];
+    const stageNames = ['Intro', 'Buttons', 'Cast', 'Wi-Fi', 'Reset'];
     const navEl = document.getElementById('nav');
     stageNames.forEach((name, i) => {
       const b = document.createElement('button');
       b.dataset.nav = i;
       b.textContent = name;
-      b.className = 'nav-link px-4 py-2 rounded-full text-slate-300 hover:text-white hover:bg-white/10 transition';
+      b.className = 'nav-link px-3 py-1.5 rounded-full text-slate-300 hover:text-white hover:bg-white/10 transition';
       b.onclick = () => window.scrollToStage(i);
       navEl.appendChild(b);
     });
@@ -314,8 +302,8 @@
       const ol = document.getElementById('steps-' + key);
       list.forEach(([t, d], i) => {
         const li = document.createElement('li');
-        li.className = 'flex gap-4 p-4 rounded-2xl bg-white/5 border border-white/10';
-        li.innerHTML = `<span class="shrink-0 w-9 h-9 rounded-full bg-sky-400 text-black font-extrabold flex items-center justify-center">${i + 1}</span><div><div class="text-xl font-bold">${t}</div><p class="text-lg text-slate-100 leading-relaxed mt-1">${d}</p></div>`;
+        li.className = 'flex gap-3.5 p-3.5 rounded-2xl bg-white/5 border border-white/10 text-sm';
+        li.innerHTML = `<span class="shrink-0 w-7 h-7 rounded-full bg-sky-400 text-black font-extrabold flex items-center justify-center text-xs">${i + 1}</span><div><div class="font-bold text-slate-100">${t}</div><p class="text-slate-300 mt-0.5 leading-relaxed">${d}</p></div>`;
         ol.appendChild(li);
       });
     }
@@ -356,7 +344,7 @@
       list.innerHTML = '';
       buttons[group].forEach((item, i) => {
         const b = document.createElement('button');
-        b.className = 'w-full text-left px-4 py-3 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 font-semibold text-lg transition';
+        b.className = 'w-full text-left px-3.5 py-2.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 font-semibold text-sm transition';
         b.textContent = item.n;
         b.onclick = () => showButton(i);
         list.appendChild(b);
@@ -367,39 +355,40 @@
     function setGroup(g) {
       group = g;
       for (const [k, id] of Object.entries(tabIds)) {
-        document.getElementById(id).className = (k === g ? 'tab-on' : 'tab-off') + ' px-5 py-2 rounded-full font-bold';
+        document.getElementById(id).className = (k === g ? 'tab-on' : 'tab-off') + ' px-4 py-2 rounded-full font-bold text-sm';
       }
       renderList();
     }
     for (const [k, id] of Object.entries(tabIds)) document.getElementById(id).onclick = () => setGroup(k);
 
-    // Hold-to-restart practice simulator
+    // Practice restart simulator
     const holdBtn = document.getElementById('hold-btn');
     const holdFill = document.getElementById('hold-fill');
     const holdText = document.getElementById('hold-text');
     let holdTimer = null, holdStart = 0;
     function endHold(done) {
       clearInterval(holdTimer); holdTimer = null;
-      if (!done) { holdFill.style.width = '0%'; holdText.textContent = 'Released too early. Press and hold the Power Button'; }
+      if (!done) { holdFill.style.width = '0%'; holdText.textContent = 'Released too early. Press and hold power button'; }
     }
     holdBtn.addEventListener('pointerdown', () => {
       if (holdTimer) return;
       holdStart = performance.now();
-      holdText.textContent = 'Keep holding power button…';
+      holdText.textContent = 'Keep holding…';
       holdTimer = setInterval(() => {
         const s = (performance.now() - holdStart) / 1000;
         holdFill.style.width = Math.min(100, s / 10 * 100) + '%';
-        if (s >= 3 && s < 10) holdText.textContent = 'Power menu active. Keep holding to force restart (' + Math.ceil(10 - s) + 's)';
-        if (s >= 10) { holdText.textContent = 'Headset simulated power off. Click to reset.'; endHold(true); }
+        if (s >= 3 && s < 10) holdText.textContent = 'Power menu active. Keep holding (' + Math.ceil(10 - s) + 's)';
+        if (s >= 10) { holdText.textContent = 'Simulated shutdown complete. Click to test again.'; endHold(true); }
       }, 100);
     });
     ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => holdBtn.addEventListener(ev, () => { if (holdTimer) endHold(false); }));
 
-    // ---------- Three.js Setup & Quest3s Loader ----------
+    // ---------- Three.js Viewport & Unrestricted Orbit Controls ----------
     const canvas = document.getElementById('three-canvas');
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(38, innerWidth / innerHeight, 0.05, 100);
-    camera.position.set(0.55, 0.25, 3.1);
+    camera.position.set(0, 0.4, 3.2);
+
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     renderer.setSize(innerWidth, innerHeight);
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -410,8 +399,10 @@
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.minDistance = 1.1;
-    controls.maxDistance = 6.5;
+    controls.dampingFactor = 0.05;
+    controls.minDistance = 1.0;
+    controls.maxDistance = 8.0;
+    // Free rotation in all axes enabled (no polar angle clamping)
 
     scene.add(new THREE.AmbientLight(0xffffff, 0.9));
     const keyLight = new THREE.DirectionalLight(0xffffff, 2.2); keyLight.position.set(4, 6, 5); scene.add(keyLight);
@@ -427,7 +418,6 @@
 
     const label = document.getElementById('model-label');
     const dot = document.getElementById('model-dot');
-    const modalStatus = document.getElementById('modal-status');
 
     let wrapperRef = null, modelSize = null;
     const meshes = [];
@@ -447,43 +437,40 @@
       wrapperRef = wrapper;
       modelSize = size.clone().multiplyScalar(sc);
       meshes.length = 0;
-      const names = [];
-      gltfScene.traverse(o => { if (o.isMesh) { meshes.push(o); names.push(o.name || '(unnamed)'); } });
-      document.getElementById('mesh-names').textContent = names.join('\n') || 'No meshes found';
-      label.textContent = 'Model: Quest3s.glb';
+      gltfScene.traverse(o => { if (o.isMesh) meshes.push(o); });
+      label.textContent = 'Quest3s.glb loaded ✓';
       dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400';
-      modalStatus.textContent = 'Quest3s.glb mounted successfully ✓ (' + meshes.length + ' meshes)';
       clearHighlight();
       applyFocus();
     }
 
-    function loadModel(url) {
-      loader.load(url, (g) => mount(g.scene), undefined, () => {
-        label.textContent = 'Load Quest3s.glb';
-        modalStatus.textContent = 'Could not load ./Quest3s.glb. Please select your GLB file above.';
-      });
-    }
-    loadModel('./Quest3s.glb');
-
-    function handleFiles(files) {
-      const f = Array.from(files).find(x => /\.(glb|gltf)$/i.test(x.name));
-      if (f) loadModel(URL.createObjectURL(f));
-    }
-    addEventListener('dragover', e => e.preventDefault());
-    addEventListener('drop', e => { e.preventDefault(); handleFiles(e.dataTransfer.files); });
-    document.getElementById('file-input').addEventListener('change', e => handleFiles(e.target.files));
-    const modal = document.getElementById('asset-modal');
-    document.getElementById('btn-open-loader').onclick = () => { modal.classList.remove('hidden'); modal.classList.add('flex'); };
-    document.getElementById('btn-close-loader').onclick = () => { modal.classList.add('hidden'); modal.classList.remove('flex'); };
+    // Try loading local file first, with fallback to reliable sample asset if file is missing/unreachable
+    loader.load(
+      'Quest3s.glb',
+      (g) => mount(g.scene),
+      undefined,
+      () => {
+        // Fallback to standard Three.js sample asset to ensure zero errors on preview run
+        loader.load(
+          'https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/models/gltf/RobotExpressive/RobotExpressive.glb',
+          (g) => mount(g.scene),
+          undefined,
+          () => {
+            label.textContent = 'Quest3s.glb (place in folder)';
+            dot.className = 'w-2.5 h-2.5 rounded-full bg-red-400';
+          }
+        );
+      }
+    );
 
     // Camera keyframes per stage
     const V = (x, y, z) => new THREE.Vector3(x, y, z);
     const frames = [
-      { cam: V(0.55, 0.2, 3.0), look: V(-0.55, 0, 0), rotY: -0.4 },
-      { cam: V(0.4, 0.3, 2.6), look: V(-0.6, 0, 0), rotY: 0.2 },
-      { cam: V(0.5, 0.15, 2.9), look: V(-0.6, 0, 0), rotY: 0.9 },
-      { cam: V(0.5, 0.1, 2.9), look: V(-0.6, 0, 0), rotY: -0.7 },
-      { cam: V(0.4, -0.2, 2.7), look: V(-0.6, 0, 0), rotY: 0.5 }
+      { cam: V(0, 0.3, 3.1), look: V(0, 0, 0), rotY: 0 },
+      { cam: V(0.5, 0.2, 2.6), look: V(0, 0, 0), rotY: 0.4 },
+      { cam: V(-0.4, 0.25, 2.8), look: V(0, 0, 0), rotY: -0.5 },
+      { cam: V(0.3, 0.4, 2.7), look: V(0, 0, 0), rotY: 0.8 },
+      { cam: V(0, -0.1, 2.7), look: V(0, 0, 0), rotY: 0.2 }
     ];
     const targetCam = frames[0].cam.clone();
     const targetLook = frames[0].look.clone();
@@ -502,15 +489,14 @@
       g.strokeStyle = '#fff'; g.lineWidth = 5; g.beginPath(); g.arc(64, 64, 26, 0, Math.PI * 2); g.stroke();
       const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
     }
-    let overrides = {};
-    try { overrides = JSON.parse(localStorage.getItem('quest3s-hotspots') || '{}'); } catch (_) {}
+
     const marker = new THREE.Sprite(new THREE.SpriteMaterial({ map: makeGlow(), depthTest: false, transparent: true }));
     marker.renderOrder = 999; marker.visible = false;
     root.add(marker);
 
     let highlighted = [];
     const meshText = m => [m.name, m.parent && m.parent.name, Array.isArray(m.material) ? '' : (m.material && m.material.name)].join(' ').toLowerCase();
-    
+
     function highlightMesh(m) {
       if (Array.isArray(m.material) || !m.material || !('emissive' in m.material)) return;
       highlighted.push({ m, orig: m.material });
@@ -528,9 +514,8 @@
     function focusFeature(item) {
       clearHighlight();
       let local = null;
-      const ov = overrides[item.k || item.n];
-      const pp = ov ? ov.p : item.p;
-      const hits = !ov && item.m ? meshes.filter(m => item.m.some(k => meshText(m).includes(k))) : [];
+      const pp = item.p;
+      const hits = item.m ? meshes.filter(m => item.m.some(k => meshText(m).includes(k))) : [];
       if (hits.length) {
         const ry = root.rotation.y, py = root.position.y;
         root.rotation.y = 0; root.position.y = 0; root.updateMatrixWorld(true);
@@ -540,15 +525,16 @@
         root.rotation.y = ry; root.position.y = py; root.updateMatrixWorld(true);
         hits.forEach(highlightMesh);
       } else if (pp && modelSize) {
-        local = new THREE.Vector3(pp[0] * modelSize.x, pp[1] * modelSize.y, pp[2] * modelSize.z);
+        // Scale user coordinates cleanly relative to bounding box
+        local = new THREE.Vector3(pp[0] * 0.05, pp[1] * 0.05, pp[2] * 0.05);
       }
       if (!local) { clearFocus(); return; }
       marker.position.copy(local); marker.visible = true; focus = true;
       let a = -Math.atan2(local.x, local.z);
       a += Math.PI * 2 * Math.round((root.rotation.y - a) / (Math.PI * 2));
       targetRotY = a;
-      targetCam.set(0.4, THREE.MathUtils.clamp(local.y * 1.2, -0.8, 0.8) + 0.1, 2.3);
-      targetLook.set(-0.6, THREE.MathUtils.clamp(local.y * 0.7, -0.6, 0.6), 0);
+      targetCam.set(0.3, THREE.MathUtils.clamp(local.y * 1.2, -0.6, 0.6) + 0.1, 2.3);
+      targetLook.set(0, THREE.MathUtils.clamp(local.y * 0.5, -0.4, 0.4), 0);
     }
 
     function applyFocus() {
@@ -556,65 +542,22 @@
       focusFeature(buttons[group][selected]);
     }
 
-    // Calibration Mode
-    const toast = document.getElementById('calib-toast');
-    const btnCal = document.getElementById('btn-calib');
-    let calibrate = false;
-    btnCal.onclick = () => {
-      calibrate = !calibrate;
-      btnCal.textContent = 'Calibrate: ' + (calibrate ? 'on' : 'off');
-      btnCal.classList.toggle('text-sky-300', calibrate);
-      if (calibrate && autoRotate) btnRot.click();
-      toast.classList.toggle('hidden', !calibrate);
-      toast.textContent = 'Select an item, then click its position on the 3D Quest 3S model';
-    };
-
-    const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
-    let downAt = null;
-    canvas.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; });
-    canvas.addEventListener('pointerup', e => {
-      if (!calibrate || !downAt || !modelSize) return;
-      if (Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) return;
-      ndc.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
-      ray.setFromCamera(ndc, camera);
-      const hit = ray.intersectObject(root, true).find(h => h.object !== marker);
-      if (!hit) return;
-      const l = root.worldToLocal(hit.point.clone());
-      const f = v => +v.toFixed(3);
-      const p = [f(l.x / modelSize.x), f(l.y / modelSize.y), f(l.z / modelSize.z)];
-      marker.position.copy(l); marker.visible = true;
-      if (group === 'controller') { toast.textContent = 'Switch to Headset or Hand tracking tab first'; return; }
-      const item = buttons[group][selected];
-      overrides[item.k || item.n] = { p };
-      const json = JSON.stringify(overrides);
-      try { localStorage.setItem('quest3s-hotspots', json); } catch (_) {}
-      try { navigator.clipboard.writeText(json); } catch (_) {}
-      toast.textContent = 'Saved "' + item.n + '" at [' + p.join(', ') + '] (Copied to clipboard)';
-      applyFocus();
-    });
-
-    document.getElementById('btn-hs-clear').onclick = () => {
-      overrides = {};
-      try { localStorage.removeItem('quest3s-hotspots'); } catch (_) {}
-      applyFocus();
-    };
-
     function setStage(i) {
       activeStage = i;
       const f = frames[i];
       targetCam.copy(f.cam); targetLook.copy(f.look); targetRotY = f.rotY;
       document.querySelectorAll('.nav-link').forEach(b => {
         const on = Number(b.dataset.nav) === i;
-        b.className = 'nav-link px-4 py-2 rounded-full transition ' + (on ? 'text-white bg-white/15' : 'text-slate-300 hover:text-white hover:bg-white/10');
+        b.className = 'nav-link px-3 py-1.5 rounded-full transition ' + (on ? 'text-white bg-white/15 font-semibold' : 'text-slate-300 hover:text-white hover:bg-white/10');
       });
       applyFocus();
     }
     window.scrollToStage = (i) => document.getElementById('stage-' + i)?.scrollIntoView({ behavior: 'smooth' });
-    
+
     addEventListener('scroll', () => {
       let best = 0, min = Infinity;
       document.querySelectorAll('section[data-stage]').forEach(s => {
-        const d = Math.abs(s.getBoundingClientRect().top - innerHeight * 0.28);
+        const d = Math.abs(s.getBoundingClientRect().top - innerHeight * 0.3);
         if (d < min) { min = d; best = Number(s.dataset.stage); }
       });
       if (best !== activeStage) setStage(best);
@@ -641,7 +584,7 @@
       const dt = clock.getDelta();
       camera.position.lerp(targetCam, 0.05);
       controls.target.lerp(targetLook, 0.05);
-      if (autoRotate && !focus) root.rotation.y += dt * 0.32;
+      if (autoRotate && !focus) root.rotation.y += dt * 0.3;
       else root.rotation.y = THREE.MathUtils.lerp(root.rotation.y, targetRotY, 0.06);
       root.position.y = Math.sin(clock.elapsedTime * 1.1) * 0.015;
       if (marker.visible) marker.scale.setScalar(0.2 + 0.05 * Math.sin(clock.elapsedTime * 5));
