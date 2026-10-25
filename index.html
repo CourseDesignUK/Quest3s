@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Meta Quest 3S — Interactive 3D Guide</title>
+<title>DFR Interactive Quest3S Guide</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -96,7 +96,7 @@
 
   <section data-stage="0" id="stage-0" class="min-h-screen flex flex-col justify-center pt-32 pb-24 px-6 sm:px-12 lg:px-16">
     <div class="max-w-xl">
-      <h1 class="font-display text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.02] mb-6 grad">Get to know your Quest 3S</h1>
+      <h1 class="font-display text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.02] mb-6 grad">DFR guide to the Quest 3S</h1>
       <p class="text-lg sm:text-xl text-slate-200 leading-relaxed mb-8">Spin the headset in 3D, find every button, cast to your laptop, switch Wi-Fi and fix a frozen screen.</p>
       <div class="flex flex-wrap gap-3 mb-8">
         <button onclick="go(1)" class="px-6 py-3.5 rounded-full bg-white text-black font-bold hover:bg-teal-200 transition">Buttons &amp; ports</button>
@@ -114,7 +114,7 @@
       <p class="text-slate-300 mb-6">Pick a part to fly the camera to it on the 3D model.</p>
       <div class="inline-flex p-1 rounded-full bg-white/10 mb-6 flex-wrap gap-1" role="tablist">
         <button id="tab-headset" class="tab-on px-4 py-2 rounded-full font-bold text-sm">Headset</button>
-        <button id="tab-controller" class="tab-off px-4 py-2 rounded-full font-bold text-sm">Controllers</button>
+      
         <button id="tab-hand" class="tab-off px-4 py-2 rounded-full font-bold text-sm">Hand tracking</button>
       </div>
       <div class="grid sm:grid-cols-2 gap-5">
@@ -190,22 +190,9 @@ const buttons = {
     {n:'Action Button',w:'Underside',d:'Dedicated button for quick system shortcuts and accessories.',hs:'hotspot-5',orbit:'0deg 140deg'},
     {n:'Volume Rocker',w:'Underside, lower edge',d:'Adjusts volume. Used with the power button for the recovery boot menu.',hs:'hotspot-6',orbit:'0deg 140deg'},
     {n:'Speaker',w:'Side of headset',d:'Built-in speaker that plays audio when you are not using headphones.',hs:'hotspot-8',orbit:'-108deg 120deg'},
-    {n:'Proximity Sensor',w:'Between the lenses',d:'Detects when you wear the headset and turns the displays on and off.',orbit:'0deg 85deg'},
-    {n:'IPD Adjustment',w:'Underside lens dial',d:'Sets the distance between the lenses to match your eyes.',orbit:'0deg 130deg'},
-    {n:'Passthrough Cameras',w:'Front faceplate',d:'Color cameras that show the real world for mixed reality.',orbit:FRONT},
-    {n:'Depth Sensor',w:'Front faceplate, center',d:'Scans room geometry for spatial mapping and Guardian boundaries.',orbit:FRONT}
+
   ],
-  controller: [
-    {n:'Thumbstick',w:'Top, thumb area',d:'Move and look around. Click it down to use as a button.',dots:[[80,100],[320,100]]},
-    {n:'A & B Buttons',w:'Right controller face',d:'Primary actions: jump, select, confirm.',dots:[[260,70],[260,125]]},
-    {n:'X & Y Buttons',w:'Left controller face',d:'Secondary actions for inventory and menus.',dots:[[140,70],[140,125]]},
-    {n:'Menu Button',w:'Left controller face',d:'Opens in-game options or pauses the app.',dots:[[150,38]]},
-    {n:'Meta Button',w:'Right controller face',d:'Opens the universal Meta menu.',dots:[[250,38]]},
-    {n:'Trigger',w:'Index finger',d:'Main select and activate button.',dots:[[97,22],[303,22]]},
-    {n:'Grip Button',w:'Inner side edge',d:'Grab and hold virtual items.',dots:[[24,95],[376,95]]},
-    {n:'Thumb Rest',w:'Capacitive pad',d:'Senses your thumb so avatar hands look natural.',dots:[[85,148],[315,148]]},
-    {n:'Battery Compartment',w:'Base of handle',d:'Holds one AA battery behind a magnetic cover.',dots:[[97,172],[303,172]]}
-  ],
+
   hand: [
     {n:'Enable Hand Tracking',w:'Settings > Movement',d:'Turn on hand tracking to navigate without controllers.',orbit:FRONT},
     {n:'Point & Pinch',w:'Index finger and thumb',d:'Point at something and touch thumb to index finger to click.',orbit:FRONT},
