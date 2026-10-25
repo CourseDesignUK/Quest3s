@@ -17,7 +17,35 @@
     * { box-sizing: border-box; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.25) #07080C; }
     html { scroll-behavior: smooth; background: #07080C; color: #fff; }
     body { margin: 0; overflow-x: hidden; background: #07080C; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
-    .card { background: rgba(14,16,23,.88); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,.14); box-shadow: 0 28px 60px -15px rgba(0,0,0,.78); }
+    
+    /* Frosted Video Background Layer */
+    .video-bg-wrap {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 100%;
+      lg:width: 50%;
+      height: 100vh;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .video-bg-wrap video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: blur(16px) brightness(0.45) saturate(1.2);
+      transform: scale(1.1);
+    }
+    .video-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(7, 8, 12, 0.45);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .card { background: rgba(14,16,23,.85); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,.14); box-shadow: 0 28px 60px -15px rgba(0,0,0,.78); }
     .tab-on { background: #fff; color: #000; }
     .tab-off { color: #fff; }
     .tab-off:hover { background: rgba(255,255,255,.1); }
@@ -28,7 +56,7 @@
     model-viewer {
       width: 100%;
       height: 100%;
-      background-color: #07080C;
+      background-color: transparent;
     }
     .Hotspot {
       background: rgba(14, 16, 23, 0.85);
@@ -113,9 +141,18 @@
 </head>
 <body class="selection:bg-sky-500 selection:text-black">
 
+  <!-- Frosted Video Background Layer -->
+  <div class="video-bg-wrap">
+    <video autoplay muted loop playsinline id="bg-video">
+      <source src="intro.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+    <div class="video-overlay"></div>
+  </div>
+
   <!-- Fixed 3D Viewport on the Right (50% Width on Large Screens) -->
-  <div class="fixed top-0 right-0 w-full lg:w-1/2 h-screen z-0 bg-[#07080C]">
-    <model-viewer id="quest-viewer" src="Quest3s.glb" ar ar-modes="webxr scene-viewer quick-look" camera-controls tone-mapping="neutral" poster="" shadow-intensity="1">
+  <div class="fixed top-0 right-0 w-full lg:w-1/2 h-screen z-10 pointer-events-auto">
+    <model-viewer id="quest-viewer" src="Quest3s.glb" ar ar-modes="webxr scene-viewer quick-look" camera-controls tone-mapping="neutral" poster="poster.webp" shadow-intensity="1">
       <button class="Hotspot" slot="hotspot-3" data-position="6.280493709110774m -0.2124072772032108m 9.64568937062215m" data-normal="0.9989230327385245m 0.04559114762680621m 0.0086152145962682m" data-visibility-attribute="visible">
         <div class="HotspotAnnotation">Power Button</div>
       </button>
@@ -141,7 +178,7 @@
     </model-viewer>
 
     <!-- Model Loading Indicator Badge -->
-    <div class="absolute top-24 right-6 lg:right-12 hidden sm:flex items-center gap-3 px-4 py-2 rounded-full bg-black/60 backdrop-blur-md border border-white/15 pointer-events-none z-10">
+    <div class="absolute top-24 right-6 lg:right-12 hidden sm:flex items-center gap-3 px-4 py-2 rounded-full bg-black/60 backdrop-blur-md border border-white/15 pointer-events-none z-20">
       <span id="model-dot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
       <span id="model-label" class="text-sm font-semibold text-slate-200">Loading Quest3s.glb…</span>
     </div>
@@ -160,17 +197,17 @@
   </header>
 
   <!-- Bottom Floating View Controls -->
-  <div class="fixed bottom-6 right-6 lg:right-12 z-30">
+  <div class="fixed bottom-6 right-6 lg:right-12 z-30 pointer-events-auto">
     <div class="card rounded-full px-3 py-2 flex items-center gap-2">
       <button id="btn-reset-cam" class="px-4 py-2 rounded-full font-semibold text-slate-200 hover:bg-white/10 text-sm whitespace-nowrap transition">Reset view</button>
     </div>
   </div>
 
   <!-- Main Content on the Left (50% Width on Large Screens) -->
-  <main class="relative z-20 w-full lg:w-1/2 min-h-screen">
+  <main class="relative z-20 w-full lg:w-1/2 min-h-screen pointer-events-none">
 
     <!-- 0 Hero Section -->
-    <section id="stage-0" data-stage="0" class="min-h-screen flex flex-col justify-center pt-32 pb-24 px-6 sm:px-12 lg:px-16">
+    <section id="stage-0" data-stage="0" class="min-h-screen flex flex-col justify-center pt-32 pb-24 px-6 sm:px-12 lg:px-16 pointer-events-auto">
       <div class="max-w-xl">
         <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sky-500/10 border border-sky-500/30 text-sky-400 text-sm font-semibold mb-6">
           <span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span>
@@ -193,11 +230,11 @@
     </section>
 
     <!-- 1 Buttons & Controls Section -->
-    <section id="stage-1" data-stage="1" class="min-h-screen flex flex-col justify-center py-28 px-6 sm:px-12 lg:px-16">
+    <section id="stage-1" data-stage="1" class="min-h-screen flex flex-col justify-center py-28 px-6 sm:px-12 lg:px-16 pointer-events-auto">
       <div class="w-full max-w-2xl">
         <div class="card rounded-3xl p-6 sm:p-8">
           <h2 class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">Hardware & Controls</h2>
-          <p class="text-slate-300 mb-6">Select a component below to inspect its exact location and annotations on the headset model.</p>
+          <p class="text-slate-300 mb-6">Select a component below to rotate the 3D model directly to that exact feature.</p>
           
           <div class="inline-flex p-1 rounded-full bg-white/10 mb-6 flex-wrap gap-1" role="tablist">
             <button id="tab-headset" class="tab-on px-4 py-2 rounded-full font-bold text-sm">Headset</button>
@@ -228,7 +265,7 @@
     </section>
 
     <!-- 2 Cast Section -->
-    <section id="stage-2" data-stage="2" class="min-h-screen flex flex-col justify-center py-28 px-6 sm:px-12 lg:px-16">
+    <section id="stage-2" data-stage="2" class="min-h-screen flex flex-col justify-center py-28 px-6 sm:px-12 lg:px-16 pointer-events-auto">
       <div class="w-full max-w-2xl">
         <div class="card rounded-3xl p-6 sm:p-8">
           <h2 class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">Cast your screen to a laptop</h2>
@@ -243,7 +280,7 @@
     </section>
 
     <!-- 3 Wi-Fi Section -->
-    <section id="stage-3" data-stage="3" class="min-h-screen flex flex-col justify-center py-28 px-6 sm:px-12 lg:px-16">
+    <section id="stage-3" data-stage="3" class="min-h-screen flex flex-col justify-center py-28 px-6 sm:px-12 lg:px-16 pointer-events-auto">
       <div class="w-full max-w-2xl">
         <div class="card rounded-3xl p-6 sm:p-8">
           <h2 class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">Change the Wi-Fi network</h2>
@@ -254,7 +291,7 @@
     </section>
 
     <!-- 4 Soft Reset Section -->
-    <section id="stage-4" data-stage="4" class="min-h-screen flex flex-col justify-center py-28 px-6 sm:px-12 lg:px-16">
+    <section id="stage-4" data-stage="4" class="min-h-screen flex flex-col justify-center py-28 px-6 sm:px-12 lg:px-16 pointer-events-auto">
       <div class="w-full max-w-2xl">
         <div class="card rounded-3xl p-6 sm:p-8">
           <h2 class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">Soft reset a frozen headset</h2>
@@ -286,65 +323,73 @@
           n: 'Power Button', 
           w: 'Right / Left side of headset', 
           d: 'Press once to sleep/wake. Hold for power menu or ~10 seconds to force a hardware restart.',
-          slot: 'hotspot-3'
+          slot: 'hotspot-3',
+          orbit: '15deg 75deg 1.2m'
         },
         { 
           n: 'Charge Port', 
           w: 'Right side / lower temple', 
           d: 'USB Type-C port for fast battery charging and Quest Link PC VR data connection.',
-          slot: 'hotspot-4'
+          slot: 'hotspot-4',
+          orbit: '45deg 80deg 1.2m'
         },
         { 
           n: 'Action Button', 
           w: 'Underside housing', 
           d: 'Dedicated auxiliary button for quick system shortcuts and accessory triggers.',
-          slot: 'hotspot-5'
+          slot: 'hotspot-5',
+          orbit: '-45deg 110deg 1.2m'
         },
         { 
           n: 'Volume Rocker', 
           w: 'Underside lower edge', 
           d: 'Adjusts master audio volume. Used with power button for recovery boot menu.',
-          slot: 'hotspot-6'
+          slot: 'hotspot-6',
+          orbit: '-75deg 100deg 1.2m'
         },
         { 
           n: 'Speaker', 
           w: 'Audio arm / strap mount', 
           d: 'Integrated spatial audio speakers delivering immersive sound without headphones.',
-          slot: 'hotspot-8'
+          slot: 'hotspot-8',
+          orbit: '90deg 90deg 1.2m'
         },
         { 
           n: 'Proximity Sensor', 
           w: 'Between lenses', 
-          d: 'Detects when headset is worn to power display panels on and off automatically.'
+          d: 'Detects when headset is worn to power display panels on and off automatically.',
+          orbit: '0deg 45deg 1.0m'
         },
         { 
           n: 'IPD Adjustment', 
           w: 'Underside lens dial', 
-          d: 'Sets physical distance between lenses to match your eye alignment.'
+          d: 'Sets physical distance between lenses to match your eye alignment.',
+          orbit: '0deg 120deg 1.1m'
         },
         { 
           n: 'Passthrough Cameras', 
           w: 'Front faceplate', 
-          d: 'High-resolution color sensors capturing real-world environment for mixed reality.'
+          d: 'High-resolution color sensors capturing real-world environment for mixed reality.',
+          orbit: '0deg 90deg 1.2m'
         }
       ],
       controller: [
-        { n: 'Thumbstick', w: 'Top thumb area', d: 'Smooth movement and camera look. Click down to use as action button.', dots: [[80, 100], [320, 100]] },
-        { n: 'A & B Buttons', w: 'Right controller face', d: 'Primary action buttons for jump, select, and confirmation.', dots: [[260, 70], [260, 125]] },
-        { n: 'X & Y Buttons', w: 'Left controller face', d: 'Secondary action buttons for inventory and menus.', dots: [[140, 70], [140, 125]] },
-        { n: 'Menu Button', w: 'Left controller face', d: 'Opens in-game options or pauses app.', dots: [[150, 38]] },
-        { n: 'Meta Button', w: 'Right controller face', d: 'Launches universal Meta Horizon system menu instantly.', dots: [[250, 38]] },
-        { n: 'Trigger', w: 'Index finger', d: 'Primary selector and item activator.', dots: [[97, 22], [303, 22]] },
-        { n: 'Grip Button', w: 'Inner side edge', d: 'Grabs and holds virtual items.', dots: [[24, 95], [376, 95]] },
-        { n: 'Thumb Rest', w: 'Capacitive pad', d: 'Senses thumb position for realistic social hand avatars.', dots: [[85, 148], [315, 148]] },
-        { n: 'Battery Compartment', w: 'Base handle', d: 'Houses single AA battery behind magnetic sliding cover.', dots: [[97, 172], [303, 172]] }
+        { n: 'Thumbstick', w: 'Top thumb area', d: 'Smooth movement and camera look. Click down to use as action button.', dots: [[80, 100], [320, 100]], orbit: '30deg 60deg 1.5m' },
+        { n: 'A & B Buttons', w: 'Right controller face', d: 'Primary action buttons for jump, select, and confirmation.', dots: [[260, 70], [260, 125]], orbit: '60deg 70deg 1.5m' },
+        { n: 'X & Y Buttons', w: 'Left controller face', d: 'Secondary action buttons for inventory and menus.', dots: [[140, 70], [140, 125]], orbit: '-60deg 70deg 1.5m' },
+        { n: 'Menu Button', w: 'Left controller face', d: 'Opens in-game options or pauses app.', dots: [[150, 38]], orbit: '-45deg 60deg 1.5m' },
+        { n: 'Meta Button', w: 'Right controller face', d: 'Launches universal Meta Horizon system menu instantly.', dots: [[250, 38]], orbit: '45deg 60deg 1.5m' },
+        { n: 'Trigger', w: 'Index finger', d: 'Primary selector and item activator.', dots: [[97, 22], [303, 22]], orbit: '0deg 80deg 1.5m' },
+        { n: 'Grip Button', w: 'Inner side edge', d: 'Grabs and holds virtual items.', dots: [[24, 95], [376, 95]], orbit: '90deg 90deg 1.5m' },
+        { n: 'Thumb Rest', w: 'Capacitive pad', d: 'Senses thumb position for realistic social hand avatars.', dots: [[85, 148], [315, 148]], orbit: '-30deg 50deg 1.5m' },
+        { n: 'Battery Compartment', w: 'Base handle', d: 'Houses single AA battery behind magnetic sliding cover.', dots: [[97, 172], [303, 172]], orbit: '0deg 130deg 1.5m' }
       ],
       hand: [
-        { n: 'Enable Hand Tracking', w: 'Settings > Movement', d: 'Turn on optical tracking to navigate completely controller-free.' },
-        { n: 'Point & Pinch', w: 'Index & thumb', d: 'Extend hand and touch thumb to index finger to click.' },
-        { n: 'Scroll & Drag', w: 'Pinch & hold', d: 'Maintain pinch while moving hand to scroll windows.' },
-        { n: 'Direct Touch', w: 'Fingertip', d: 'Reach out and physically tap virtual UI buttons.' },
-        { n: 'Universal Menu Gesture', w: 'Palm facing you', d: 'Hold palm inward and pinch to open system menu.' }
+        { n: 'Enable Hand Tracking', w: 'Settings > Movement', d: 'Turn on optical tracking to navigate completely controller-free.', orbit: '0deg 90deg 1.3m' },
+        { n: 'Point & Pinch', w: 'Index & thumb', d: 'Extend hand and touch thumb to index finger to click.', orbit: '20deg 80deg 1.3m' },
+        { n: 'Scroll & Drag', w: 'Pinch & hold', d: 'Maintain pinch while moving hand to scroll windows.', orbit: '-20deg 80deg 1.3m' },
+        { n: 'Direct Touch', w: 'Fingertip', d: 'Reach out and physically tap virtual UI buttons.', orbit: '45deg 70deg 1.3m' },
+        { n: 'Universal Menu Gesture', w: 'Palm facing you', d: 'Hold palm inward and pinch to open system menu.', orbit: '0deg 95deg 1.3m' }
       ]
     };
 
@@ -424,14 +469,19 @@
       document.getElementById('ctrl-svg-wrap').classList.toggle('hidden', group !== 'controller');
       markDots();
 
-      // If item has a slot attribute corresponding to a model-viewer hotspot, orbit towards it
-      if (viewer && item.slot) {
-        const hotspotEl = viewer.querySelector(`[slot="${item.slot}"]`);
-        if (hotspotEl && hotspotEl.dataset.position) {
-          const parts = hotspotEl.dataset.position.replace(/m/g, '').trim().split(/\s+/).map(Number);
-          if (parts.length === 3) {
-            viewer.cameraTarget = `${parts[0]}m ${parts[1]}m ${parts[2]}m`;
+      // Rotate model/camera orbit to show selected feature
+      if (viewer) {
+        if (item.slot) {
+          const hotspotEl = viewer.querySelector(`[slot="${item.slot}"]`);
+          if (hotspotEl && hotspotEl.dataset.position) {
+            const parts = hotspotEl.dataset.position.replace(/m/g, '').trim().split(/\s+/).map(Number);
+            if (parts.length === 3) {
+              viewer.cameraTarget = `${parts[0]}m ${parts[1]}m ${parts[2]}m`;
+            }
           }
+        }
+        if (item.orbit) {
+          viewer.cameraOrbit = item.orbit;
         }
       }
     }
@@ -495,6 +545,7 @@
         viewer.resetTurntable();
       }
       viewer.cameraTarget = 'auto auto auto';
+      viewer.cameraOrbit = '0deg 75deg 105%';
     };
 
     // Stage scrolling synchronization
