@@ -14,7 +14,7 @@
     tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter','sans-serif'], display: ['Plus Jakarta Sans','sans-serif'] } } } }
   </script>
   <style>
-    * { box-sizing: border-box; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.25) rgba(14,16,23,.85); }
+    * { box-sizing: border-box; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.25) rgba(7,8,12,.85); }
     html { scroll-behavior: smooth; background: #07080C; color: #fff; }
     body { margin: 0; overflow-x: hidden; background: #07080C; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
     
@@ -38,9 +38,9 @@
     .video-overlay {
       position: absolute;
       inset: 0;
-      background: rgba(7, 8, 12, 0.5);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      background: rgba(7, 8, 12, 0.45);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
 
     /* Floating Frosted Glass Card */
@@ -58,7 +58,7 @@
     .item-on { border-color: #38BDF8 !important; background: rgba(56,189,248,0.18) !important; }
     button:focus-visible, a:focus-visible { outline: 3px solid #38BDF8; outline-offset: 2px; }
 
-    /* Model Viewer Custom Hotspot Styling */
+    /* Model Viewer Custom Placement: Shifted pivot/center to 75% width */
     model-viewer {
       width: 100vw;
       height: 100vh;
@@ -66,7 +66,17 @@
       position: fixed;
       inset: 0;
       z-index: 1;
+      /* Shifts the visual composition and orbit center towards the right side (75% width) */
+      --poster-color: transparent;
+      transform: translateX(25vw);
     }
+
+    @media (max-width: 1024px) {
+      model-viewer {
+        transform: translateX(0vw);
+      }
+    }
+
     .Hotspot {
       background: rgba(14, 16, 23, 0.88);
       border: 2px solid #38bdf8;
@@ -100,11 +110,14 @@
       padding: 12px 26px;
       position: absolute;
       bottom: 28px;
-      right: 28px;
+      right: calc(28px + 25vw);
       z-index: 10;
       box-shadow: 0 10px 25px rgba(56, 189, 248, 0.4);
       cursor: pointer;
       transition: background 0.2s;
+    }
+    @media (max-width: 1024px) {
+      #ar-button { right: 28px; }
     }
     #ar-button:hover { background: #7dd3fc; }
     
@@ -113,7 +126,7 @@
       width: 33%;
       height: 2px;
       position: absolute;
-      left: 50%;
+      left: calc(50% + 12.5vw);
       top: 50%;
       transform: translate(-50%, -50%);
       background: rgba(255,255,255,0.1);
@@ -121,15 +134,21 @@
       overflow: hidden;
       z-index: 20;
     }
+    @media (max-width: 1024px) {
+      .progress-bar { left: 50%; }
+    }
     .progress-bar.hide { display: none; }
     .update-bar { background: #38bdf8; width: 0%; height: 100%; transition: width 0.3s; }
     
     #ar-prompt {
       position: absolute;
       bottom: 85px;
-      right: 45px;
+      right: calc(45px + 25vw);
       z-index: 10;
       animation: bounce 1s infinite alternate;
+    }
+    @media (max-width: 1024px) {
+      #ar-prompt { right: 45px; }
     }
     #ar-prompt img { width: 48px; }
     @keyframes bounce {
@@ -150,7 +169,7 @@
     <div class="video-overlay"></div>
   </div>
 
-  <!-- Fullscreen 3D Model Viewer (Background Layer) -->
+  <!-- Fullscreen 3D Model Viewer (Background Layer - Pivoted to 75% width) -->
   <model-viewer id="quest-viewer" src="Quest3s.glb" ar ar-modes="webxr scene-viewer quick-look" camera-controls tone-mapping="neutral" poster="poster.webp" shadow-intensity="1">
     <button class="Hotspot" slot="hotspot-3" data-position="6.280493709110774m -0.2124072772032108m 9.64568937062215m" data-normal="0.9989230327385245m 0.04559114762680621m 0.0086152145962682m" data-visibility-attribute="visible">
         <div class="HotspotAnnotation">Power Button</div>
@@ -197,7 +216,7 @@
     </div>
   </div>
 
-  <!-- Floating Frosted Glass Content Containers on the Left -->
+  <!-- Floating Frosted Glass Content Containers on the Left (Max width ~650px) -->
   <main class="relative z-20 w-full lg:w-[620px] xl:w-[680px] min-h-screen pointer-events-none px-6 sm:px-12 pt-24 pb-24 space-y-32">
 
     <!-- 0 Hero Section -->
