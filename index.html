@@ -37,7 +37,7 @@
     <canvas id="three-canvas" class="block w-full h-full relative cursor-grab active:cursor-grabbing"></canvas>
     <div class="fixed top-24 right-6 lg:right-12 hidden sm:flex items-center gap-3 px-4 py-2 rounded-full bg-black/60 backdrop-blur-md border border-white/15 pointer-events-none">
       <span id="model-dot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
-      <span id="model-label" class="text-sm font-semibold">Loading meta_quest_3.glb…</span>
+      <span id="model-label" class="text-sm font-semibold">Loading Quest3s.glb…</span>
     </div>
   </div>
 
@@ -73,15 +73,15 @@
       <div class="max-w-3xl pointer-events-auto">
         <h1 class="font-display text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.05] mb-6">Get to know your Meta Quest 3S</h1>
         <p class="text-xl sm:text-2xl leading-relaxed mb-8 max-w-2xl">
-          Every button on the headset and controllers, plus the three things people look up most: casting to a laptop, changing Wi-Fi, and soft resetting a frozen headset.
+          Every hardware control on the Quest 3S headset and Touch Plus controllers, plus the top essentials: casting to a laptop, switching Wi-Fi, and performing a soft reset.
         </p>
         <div class="flex flex-wrap gap-3 mb-8">
-          <button onclick="scrollToStage(1)" class="px-6 py-3 rounded-full bg-white text-black font-bold hover:bg-slate-200 transition">Buttons</button>
+          <button onclick="scrollToStage(1)" class="px-6 py-3 rounded-full bg-white text-black font-bold hover:bg-slate-200 transition">Buttons & Ports</button>
           <button onclick="scrollToStage(2)" class="px-6 py-3 rounded-full bg-white/10 border border-white/25 font-bold hover:bg-white/20 transition">Cast to laptop</button>
           <button onclick="scrollToStage(3)" class="px-6 py-3 rounded-full bg-white/10 border border-white/25 font-bold hover:bg-white/20 transition">Change Wi-Fi</button>
           <button onclick="scrollToStage(4)" class="px-6 py-3 rounded-full bg-white/10 border border-white/25 font-bold hover:bg-white/20 transition">Soft reset</button>
         </div>
-        <p class="text-lg text-slate-200">Drag the headset to rotate it. Scroll to move through the guide.</p>
+        <p class="text-lg text-slate-200">Drag the 3D model to inspect. Scroll to progress through the setup guide.</p>
       </div>
     </section>
 
@@ -89,9 +89,9 @@
     <section id="stage-1" data-stage="1" class="min-h-screen flex items-center py-28 px-6 sm:px-12 lg:px-20 max-w-[1720px] mx-auto">
       <div class="w-full lg:w-[700px] pointer-events-auto">
         <div class="card rounded-3xl p-8 sm:p-10">
-          <h2 class="font-display text-4xl sm:text-5xl font-extrabold tracking-tight mb-4">Buttons and controls</h2>
-          <p class="text-lg text-slate-200 mb-6">Select an item to see what it does. On the headset, the 3D model turns to show it and highlights the part.</p>
-          <div class="inline-flex p-1 rounded-full bg-white/10 mb-6" role="tablist">
+          <h2 class="font-display text-4xl sm:text-5xl font-extrabold tracking-tight mb-4">Hardware & Controls</h2>
+          <p class="text-lg text-slate-200 mb-6">Select a component to instantly rotate and highlight it on the Quest 3S 3D model.</p>
+          <div class="inline-flex p-1 rounded-full bg-white/10 mb-6 flex-wrap gap-1" role="tablist">
             <button id="tab-headset" class="tab-on px-5 py-2 rounded-full font-bold">Headset</button>
             <button id="tab-controller" class="tab-off px-5 py-2 rounded-full font-bold">Controllers</button>
             <button id="tab-hand" class="tab-off px-5 py-2 rounded-full font-bold">Hand tracking</button>
@@ -122,11 +122,11 @@
       <div class="w-full lg:w-[700px] pointer-events-auto">
         <div class="card rounded-3xl p-8 sm:p-10">
           <h2 class="font-display text-4xl sm:text-5xl font-extrabold tracking-tight mb-4">Cast your screen to a laptop</h2>
-          <p class="text-lg text-slate-200 mb-6">The headset and laptop must be on the same Wi-Fi network, and you must be signed in to the same Meta account on both.</p>
+          <p class="text-lg text-slate-200 mb-6">Ensure both your headset and laptop reside on the same Wi-Fi network and are logged into your Meta account.</p>
           <ol id="steps-cast" class="space-y-3"></ol>
           <div class="mt-6 p-5 rounded-2xl bg-amber-500/15 border border-amber-400/40">
-            <h3 class="text-xl font-bold mb-1">Casting won’t connect?</h3>
-            <p class="text-lg text-white leading-relaxed">Use Chrome or Edge, switch off any VPN, and make sure the laptop isn’t on a guest or hotel network that blocks device-to-device traffic. For a wired option, Meta Quest Developer Hub can mirror over a USB-C cable.</p>
+            <h3 class="text-xl font-bold mb-1">Casting troubleshooting</h3>
+            <p class="text-lg text-white leading-relaxed">Use Google Chrome or Microsoft Edge, disable active VPN tunnels, and verify guest isolation is disabled on your router. Alternatively, use Meta Quest Developer Hub via USB-C.</p>
           </div>
         </div>
       </div>
@@ -137,7 +137,7 @@
       <div class="w-full lg:w-[700px] pointer-events-auto">
         <div class="card rounded-3xl p-8 sm:p-10">
           <h2 class="font-display text-4xl sm:text-5xl font-extrabold tracking-tight mb-4">Change the Wi-Fi network</h2>
-          <p class="text-lg text-slate-200 mb-6">Do this inside the headset. If it can’t reach any network, set up Wi-Fi from the Meta Horizon phone app instead.</p>
+          <p class="text-lg text-slate-200 mb-6">Connect directly from within the headset settings or use the Meta Horizon mobile app if network connectivity is offline.</p>
           <ol id="steps-wifi" class="space-y-3"></ol>
         </div>
       </div>
@@ -148,20 +148,20 @@
       <div class="w-full lg:w-[700px] pointer-events-auto">
         <div class="card rounded-3xl p-8 sm:p-10">
           <h2 class="font-display text-4xl sm:text-5xl font-extrabold tracking-tight mb-4">Soft reset a frozen headset</h2>
-          <p class="text-lg text-slate-200 mb-6">A soft reset restarts the headset and keeps your games, accounts and settings.</p>
+          <p class="text-lg text-slate-200 mb-6">A soft reboot safely restarts your Quest 3S while preserving all user files, games, and configurations.</p>
           <ol id="steps-reset" class="space-y-3 mb-6"></ol>
 
           <div class="p-5 rounded-2xl bg-white/5 border border-white/15 mb-6">
-            <h3 class="text-xl font-bold mb-3">Practice the hold</h3>
+            <h3 class="text-xl font-bold mb-3">Practice power button hold</h3>
             <button id="hold-btn" class="w-full relative overflow-hidden px-6 py-4 rounded-full bg-white/10 border border-white/25 font-bold text-lg select-none touch-none">
               <span id="hold-fill" class="absolute inset-y-0 left-0 bg-sky-500/50" style="width:0%"></span>
-              <span id="hold-text" class="relative">Press and hold the power button</span>
+              <span id="hold-text" class="relative">Press and hold the Power Button</span>
             </button>
           </div>
 
           <div class="p-5 rounded-2xl bg-red-500/15 border border-red-400/50">
-            <h3 class="text-xl font-bold mb-1">Don’t confuse this with a factory reset</h3>
-            <p class="text-lg text-white leading-relaxed">Holding power and volume down together opens the boot menu. Choosing “Factory reset” there erases everything on the headset. Only use it if a soft reset doesn’t fix the problem.</p>
+            <h3 class="text-xl font-bold mb-1">Factory Reset Warning</h3>
+            <p class="text-lg text-white leading-relaxed">Holding Power and Volume Down together opens the boot menu. Selecting Factory Reset will wipe all headset data permanently. Use only when troubleshooting severe software hangs.</p>
           </div>
         </div>
       </div>
@@ -172,16 +172,16 @@
   <div id="asset-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-md p-6">
     <div class="card rounded-3xl max-w-xl w-full p-8">
       <div class="flex items-center justify-between mb-5">
-        <h3 class="font-display text-2xl font-extrabold">Load meta_quest_3.glb</h3>
+        <h3 class="font-display text-2xl font-extrabold">Load Quest3s.glb</h3>
         <button id="btn-close-loader" class="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 font-semibold text-sm">Close</button>
       </div>
-      <p class="text-lg text-slate-200 mb-5">The page loads <strong>./meta_quest_3.glb</strong> from the same folder as index.html. If your browser blocks that (for example when opening the file directly), choose or drop the file here.</p>
+      <p class="text-lg text-slate-200 mb-5">The application loads <strong>./Quest3s.glb</strong> automatically. If running locally without a server, pick or drop your GLB file here.</p>
       <label id="dropzone" class="flex flex-col items-center justify-center border-2 border-dashed border-white/30 hover:border-sky-400 rounded-2xl p-8 bg-white/5 cursor-pointer text-center">
         <input id="file-input" type="file" accept=".glb,.gltf" class="hidden" />
-        <span class="text-xl font-bold">Select or drop meta_quest_3.glb</span>
+        <span class="text-xl font-bold">Select or drop Quest3s.glb</span>
       </label>
       <p id="modal-status" class="mt-4 text-base text-slate-300">Waiting for model…</p>
-      <details class="mt-3"><summary class="cursor-pointer font-semibold">Mesh names in your model</summary>
+      <details class="mt-3"><summary class="cursor-pointer font-semibold">Detected mesh names</summary>
         <pre id="mesh-names" class="mt-2 max-h-48 overflow-auto text-sm text-slate-300 bg-black/40 p-3 rounded-xl"></pre>
       </details>
     </div>
@@ -194,66 +194,111 @@
     import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
     import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-    // ---------- Content ----------
+    // ---------- Content mapping with exact Quest3s Hotspot data ----------
     const CAM = { k: 'cameras', m: ['camera'], p: [0.3, 0.05, 0.5] };
-    // m = keywords matched against mesh/material names in your GLB; p = fallback position as a fraction of the model's bounding box [x, y, z]
-    // (x: + is the headset's left side, y: + is up, z: + is the front). Use "Calibrate" to find better values.
     const buttons = {
       headset: [
-        { n: 'Power button', w: 'Left side of the headset', d: 'Press once to put the headset to sleep or wake it. Hold to open the power menu (Power off or Restart). Holding for about 10 seconds forces a restart.', m: ['power'], p: [0.5, -0.05, 0.1] },
-        { n: 'Volume buttons', w: 'Left side, next to power', d: 'Raise or lower the volume. Hold Power and Volume down together while the headset is off to open the boot menu.', m: ['volume'], p: [0.5, 0.05, 0.0] },
-        { n: 'Proximity sensor', w: 'Between the lenses', d: 'Detects when you put the headset on and wakes it. Cover it with tape or a finger to keep the headset awake while testing.', m: ['proximity'], p: [0, 0.1, -0.35] },
-        { n: 'IPD dial', w: 'Underside of the headset', d: 'Sets the distance between the lenses to match your eyes. The Quest 3S has three presets: 58, 63 and 68 mm. Pick the one where text looks sharpest.', m: ['ipd', 'dial'], p: [0.15, -0.5, 0.05] },
-        { n: 'Passthrough cameras', w: 'Front of the headset', d: 'Color cameras that show the real room while you wear the headset. They also track your controllers and hands.', ...CAM },
-        { n: 'Depth sensor', w: 'Front of the headset', d: 'Maps the shape of your room so virtual objects can sit on your furniture and your Guardian boundary stays accurate.', m: ['depth'], p: [0, 0, 0.5] },
-        { n: 'Microphones', w: 'Underside of the headset', d: 'Pick up your voice for chat and voice commands. Mute from Quick Settings if you need privacy.', m: ['mic'], p: [-0.15, -0.5, 0.3] },
-        { n: 'USB-C port', w: 'Left side of the headset', d: 'Charges the headset and connects it to a PC for Quest Link or Meta Quest Developer Hub.', m: ['usb'], p: [0.5, -0.2, 0.0] }
+        { 
+          n: 'Power Button', 
+          w: 'Right/Left side of the headset', 
+          d: 'Press once to put the headset to sleep or wake it. Hold to open the power menu. Holding for ~10 seconds forces a hardware restart.', 
+          m: ['power', 'hotspot-3'], 
+          p: [0.35, -0.05, 0.45] 
+        },
+        { 
+          n: 'Charge Port', 
+          w: 'Right side / Lower temple area', 
+          d: 'USB Type-C port used for charging the internal battery and connecting to computers for Quest Link or developer debugging.', 
+          m: ['charge', 'port', 'hotspot-4'], 
+          p: [0.38, 0.05, 0.35] 
+        },
+        { 
+          n: 'Action Button', 
+          w: 'Underside / Lower chassis', 
+          d: 'Specialized physical button for quick accessibility features, shortcut triggers, or auxiliary hardware switching.', 
+          m: ['action', 'hotspot-5'], 
+          p: [-0.18, -0.22, 0.4] 
+        },
+        { 
+          n: 'Volume Rocker', 
+          w: 'Underside / Lower edge housing', 
+          d: 'Adjusts audio volume up and down. Combined with the power button during boot sequence to enter recovery options.', 
+          m: ['volume', 'rocker', 'hotspot-6'], 
+          p: [-0.22, -0.22, 0.45] 
+        },
+        { 
+          n: 'Proximity Sensor', 
+          w: 'Between lenses inside facial interface', 
+          d: 'Detects when you are wearing the headset to automatically turn the display panels on and off.', 
+          m: ['proximity'], 
+          p: [0, 0.1, -0.35] 
+        },
+        { 
+          n: 'IPD Adjustment', 
+          w: 'Underside lens housing', 
+          d: 'Fine-tunes the physical lens separation distance to match your interpupillary distance for optimal visual clarity.', 
+          m: ['ipd', 'dial'], 
+          p: [0.15, -0.35, 0.05] 
+        },
+        { 
+          n: 'Passthrough Cameras', 
+          w: 'Front outer faceplate', 
+          d: 'High-resolution color cameras providing immersive mixed reality passthrough and environmental spatial tracking.', 
+          ...CAM 
+        },
+        { 
+          n: 'Depth Sensor', 
+          w: 'Front faceplate center', 
+          d: 'Advanced depth projector mapping room topology and physical obstacles for seamless mixed reality occlusion.', 
+          m: ['depth'], 
+          p: [0, 0, 0.5] 
+        }
       ],
       controller: [
-        { n: 'Thumbstick', w: 'Top of each controller', d: 'Move and turn in apps. Press it down to use it as a button (often run or snap-turn).', dots: [[80, 100], [320, 100]] },
-        { n: 'A and B buttons', w: 'Right controller, top face', d: 'Main action buttons. A is usually select or jump, B is usually back or cancel.', dots: [[260, 70], [260, 125]] },
-        { n: 'X and Y buttons', w: 'Left controller, top face', d: 'Secondary action buttons. Their jobs change by app, such as inventory or tools.', dots: [[140, 70], [140, 125]] },
-        { n: 'Menu button', w: 'Left controller, small button above X', d: 'Opens the in-app menu or pauses the game. Hold it to recenter your view in some apps.', dots: [[150, 38]] },
-        { n: 'Meta button', w: 'Right controller, small button above B', d: 'Tap to open the Meta universal menu from any app. Hold to recenter your view.', dots: [[250, 38]] },
-        { n: 'Trigger', w: 'Underside, under your index finger (shown at the top edge)', d: 'Select, shoot or confirm. Also used to point at and click items in menus.', dots: [[97, 22], [303, 22]] },
-        { n: 'Grip button', w: 'Outer edge, under your middle finger (shown at the sides)', d: 'Grab and hold objects. In menus, holding it lets you drag the window.', dots: [[24, 95], [376, 95]] },
-        { n: 'Thumb rest', w: 'Beside the thumbstick', d: 'A touch-sensitive surface that lets the controller show a relaxed thumb pose and detect thumbs-up gestures.', dots: [[85, 148], [315, 148]] },
-        { n: 'Battery compartment', w: 'Bottom of each controller', d: 'Each controller uses one AA battery. Slide the cover off to replace it.', dots: [[97, 172], [303, 172]] }
+        { n: 'Thumbstick', w: 'Top thumb area', d: 'Smooth locomotion and camera turning. Press down for click actions.', dots: [[80, 100], [320, 100]] },
+        { n: 'A & B Buttons', w: 'Right controller face', d: 'Primary interactive face buttons for selection, jumping, and menu confirmation.', dots: [[260, 70], [260, 125]] },
+        { n: 'X & Y Buttons', w: 'Left controller face', d: 'Secondary interactive buttons for inventory shortcuts and secondary menus.', dots: [[140, 70], [140, 125]] },
+        { n: 'Menu Button', w: 'Left controller face', d: 'Opens in-game options or pauses active applications.', dots: [[150, 38]] },
+        { n: 'Meta Button', w: 'Right controller face', d: 'Launches the universal Meta Horizon system menu instantly from any application.', dots: [[250, 38]] },
+        { n: 'Trigger', w: 'Under index finger', d: 'Primary pointer clicker and fire/interact mechanism.', dots: [[97, 22], [303, 22]] },
+        { n: 'Grip Button', w: 'Inner side edge', d: 'Grabs virtual objects and handles physical items.', dots: [[24, 95], [376, 95]] },
+        { n: 'Thumb Rest', w: 'Capacitive thumb pad', d: 'Senses thumb position to render natural hand poses in social spaces.', dots: [[85, 148], [315, 148]] },
+        { n: 'Battery Compartment', w: 'Base handle', d: 'Houses a single AA battery accessed by sliding off the magnetic cover.', dots: [[97, 172], [303, 172]] }
       ],
       hand: [
-        { n: 'Turn on hand tracking', w: 'Settings, then Movement tracking', d: 'Switch on Hand and body tracking. Then set both controllers down for a few seconds and the headset switches to your hands. Pick the controllers up and it switches back.', ...CAM },
-        { n: 'Point and pinch (select)', w: 'Index finger and thumb', d: 'A ray extends from your hand to point at menus. Touch your index finger to your thumb to click, just like pressing the trigger.', ...CAM },
-        { n: 'Pinch and drag (scroll, move)', w: 'Hold the pinch', d: 'Keep the pinch closed and move your hand to scroll lists, drag sliders or move windows. Open your fingers to let go.', ...CAM },
-        { n: 'Poke (direct touch)', w: 'Index fingertip', d: 'When a panel is within arm’s reach, tap it directly with a fingertip. Pushing through the surface presses the button.', ...CAM },
-        { n: 'Menu gesture', w: 'Palm facing you', d: 'Raise your hand with your palm toward your face and pinch to open the universal menu. Hold the pinch to recenter your view. The exact gesture can vary with software version.', ...CAM },
-        { n: 'Tracking tips', w: 'Front cameras', d: 'The front cameras must see your hands. Keep them between chest and face height, in good light, and avoid crossing hands or wearing gloves. Hands outside the cameras’ view lose tracking.', ...CAM }
+        { n: 'Enable Hand Tracking', w: 'Settings > Movement tracking', d: 'Activate optical hand tracking to navigate system menus completely controller-free.', ...CAM },
+        { n: 'Point & Pinch', w: 'Index finger & thumb', d: 'Extend hand forward with index finger pointing, then pinch thumb and index together to click.', ...CAM },
+        { n: 'Scroll & Drag', w: 'Pinch and hold gesture', d: 'Maintain a closed pinch while moving your hand to drag web pages or reposition floating panels.', ...CAM },
+        { n: 'Direct Touch', w: 'Fingertip contact', d: 'Physically reach out and tap virtual buttons directly with your fingertip.', ...CAM },
+        { n: 'System Menu Gesture', w: 'Palm facing inward', d: 'Hold palm facing toward your face and execute a quick pinch to pull up the universal menu.', ...CAM },
+        { n: 'Tracking Environment', w: 'Lighting & camera view', d: 'Maintain adequate room lighting and keep hands within camera frustum for rock-solid tracking.', ...CAM }
       ]
     };
 
     const steps = {
       cast: [
-        ['Open the Meta casting page on your laptop', 'In Chrome or Edge, go to oculus.com/casting and sign in with the same Meta account as the headset.'],
-        ['Press the Meta button', 'Put on the headset and press the Meta button on your right controller to open the universal menu.'],
-        ['Choose Cast', 'Select the Sharing icon (arrow), then Cast. Pick Computer from the list.'],
-        ['Select your laptop and start', 'Choose your laptop’s browser from the device list, then select Next. Your view appears in the browser window within a few seconds.'],
-        ['Stop casting', 'Select Stop Casting in the same menu, or close the browser tab.']
+        ['Open Meta Casting', 'On your laptop browser (Chrome/Edge), navigate to oculus.com/casting and log into your Meta account.'],
+        ['Access Universal Menu', 'Put on your headset and press the Meta button on your right Touch Plus controller.'],
+        ['Select Cast Option', 'Click the Sharing icon, then select Cast. Choose "Computer" from the available device targets.'],
+        ['Initiate Mirroring', 'Confirm your laptop browser selection and click Next. Live stereoscopic projection will stream to your screen.'],
+        ['End Session', 'Click Stop Casting in the headset quick menu or close your browser session tab.']
       ],
       wifi: [
-        ['Open the universal menu', 'Press the Meta button on your right controller.'],
-        ['Open Quick Settings', 'Select the clock on the left side of the menu bar to open Quick Settings.'],
-        ['Select Wi-Fi', 'Choose the Wi-Fi tile to see the networks in range.'],
-        ['Pick a network and enter the password', 'Select the network, then type the password with the virtual keyboard and select Connect.'],
-        ['Forget an old network (optional)', 'Select the network you no longer want, then choose Forget so the headset stops rejoining it.']
+        ['Open Universal Menu', 'Press the Meta button on your right controller to bring up the primary overlay.'],
+        ['Open Quick Settings', 'Select the battery/clock tile on the left side of the menu bar to open Quick Settings.'],
+        ['Select Wi-Fi Tile', 'Click the Wi-Fi icon to open the available wireless networks list.'],
+        ['Connect to Network', 'Select your preferred secure network, input the password via virtual keyboard, and click Connect.'],
+        ['Forget Old Networks', 'Select previously saved networks you no longer use and choose Forget to stop auto-joining.']
       ],
       reset: [
-        ['Hold the power button', 'Press and hold the power button on the left side of the headset for about 3 seconds.'],
-        ['Choose Restart', 'Select Restart on the power menu. The headset reboots and shows the Meta logo.'],
-        ['Force a restart if it’s frozen', 'If the screen won’t respond, hold the power button for about 10 seconds until the headset turns off, then press it again to start.'],
-        ['Wait for the home screen', 'Boot takes up to a minute. Your apps and settings are unchanged.']
+        ['Press Power Button', 'Press and hold the physical Power Button on the headset for approximately 3 seconds.'],
+        ['Confirm Restart', 'Select Restart from the on-screen power menu overlay to perform a clean reboot.'],
+        ['Force Shutdown (If Frozen)', 'If the UI is completely unresponsive, hold the Power Button continuously for 10 seconds until shutdown.'],
+        ['Boot Up', 'Power the headset back on normally. System files and downloaded applications remain fully intact.']
       ]
     };
 
-    // ---------- Render content ----------
+    // ---------- Navigation Generation ----------
     const stageNames = ['Intro', 'Buttons', 'Cast to laptop', 'Wi-Fi', 'Soft reset'];
     const navEl = document.getElementById('nav');
     stageNames.forEach((name, i) => {
@@ -283,6 +328,7 @@
       c.setAttribute('cx', x); c.setAttribute('cy', y); c.dataset.i = i;
       svgDots.appendChild(c);
     }));
+
     function markDots() {
       svgDots.querySelectorAll('circle').forEach(c => {
         const on = group === 'controller' && Number(c.dataset.i) === selected;
@@ -292,6 +338,7 @@
         c.setAttribute('stroke-width', 3);
       });
     }
+
     function showButton(i) {
       selected = i;
       const item = buttons[group][i];
@@ -303,6 +350,7 @@
       markDots();
       applyFocus();
     }
+
     function renderList() {
       const list = document.getElementById('btn-list');
       list.innerHTML = '';
@@ -315,6 +363,7 @@
       });
       showButton(0);
     }
+
     function setGroup(g) {
       group = g;
       for (const [k, id] of Object.entries(tabIds)) {
@@ -324,29 +373,29 @@
     }
     for (const [k, id] of Object.entries(tabIds)) document.getElementById(id).onclick = () => setGroup(k);
 
-    // Hold-to-restart practice
+    // Hold-to-restart practice simulator
     const holdBtn = document.getElementById('hold-btn');
     const holdFill = document.getElementById('hold-fill');
     const holdText = document.getElementById('hold-text');
     let holdTimer = null, holdStart = 0;
     function endHold(done) {
       clearInterval(holdTimer); holdTimer = null;
-      if (!done) { holdFill.style.width = '0%'; holdText.textContent = 'Released too early. Press and hold the power button'; }
+      if (!done) { holdFill.style.width = '0%'; holdText.textContent = 'Released too early. Press and hold the Power Button'; }
     }
     holdBtn.addEventListener('pointerdown', () => {
       if (holdTimer) return;
       holdStart = performance.now();
-      holdText.textContent = 'Keep holding…';
+      holdText.textContent = 'Keep holding power button…';
       holdTimer = setInterval(() => {
         const s = (performance.now() - holdStart) / 1000;
         holdFill.style.width = Math.min(100, s / 10 * 100) + '%';
-        if (s >= 3 && s < 10) holdText.textContent = 'Power menu shown. Keep holding to force restart (' + Math.ceil(10 - s) + 's)';
-        if (s >= 10) { holdText.textContent = 'Headset powered off. Press power again to start.'; endHold(true); }
+        if (s >= 3 && s < 10) holdText.textContent = 'Power menu active. Keep holding to force restart (' + Math.ceil(10 - s) + 's)';
+        if (s >= 10) { holdText.textContent = 'Headset simulated power off. Click to reset.'; endHold(true); }
       }, 100);
     });
     ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => holdBtn.addEventListener(ev, () => { if (holdTimer) endHold(false); }));
 
-    // ---------- Three.js ----------
+    // ---------- Three.js Setup & Quest3s Loader ----------
     const canvas = document.getElementById('three-canvas');
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(38, innerWidth / innerHeight, 0.05, 100);
@@ -364,9 +413,9 @@
     controls.minDistance = 1.1;
     controls.maxDistance = 6.5;
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.8));
-    const key = new THREE.DirectionalLight(0xffffff, 2); key.position.set(4, 6, 5); scene.add(key);
-    const rim = new THREE.DirectionalLight(0x38bdf8, 1.3); rim.position.set(-5, 3, -4); scene.add(rim);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.9));
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.2); keyLight.position.set(4, 6, 5); scene.add(keyLight);
+    const rimLight = new THREE.DirectionalLight(0x38bdf8, 1.4); rimLight.position.set(-5, 3, -4); scene.add(rimLight);
 
     const root = new THREE.Group();
     scene.add(root);
@@ -382,6 +431,7 @@
 
     let wrapperRef = null, modelSize = null;
     const meshes = [];
+
     function mount(gltfScene) {
       if (wrapperRef) root.remove(wrapperRef);
       gltfScene.updateMatrixWorld(true);
@@ -400,19 +450,20 @@
       const names = [];
       gltfScene.traverse(o => { if (o.isMesh) { meshes.push(o); names.push(o.name || '(unnamed)'); } });
       document.getElementById('mesh-names').textContent = names.join('\n') || 'No meshes found';
-      label.textContent = 'Model: meta_quest_3.glb';
+      label.textContent = 'Model: Quest3s.glb';
       dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400';
-      modalStatus.textContent = 'meta_quest_3.glb mounted ✓ (' + meshes.length + ' meshes)';
+      modalStatus.textContent = 'Quest3s.glb mounted successfully ✓ (' + meshes.length + ' meshes)';
       clearHighlight();
       applyFocus();
     }
+
     function loadModel(url) {
       loader.load(url, (g) => mount(g.scene), undefined, () => {
-        label.textContent = 'Load meta_quest_3.glb from folder';
-        modalStatus.textContent = 'Could not load ./meta_quest_3.glb. Select the file above.';
+        label.textContent = 'Load Quest3s.glb';
+        modalStatus.textContent = 'Could not load ./Quest3s.glb. Please select your GLB file above.';
       });
     }
-    loadModel('./meta_quest_3.glb');
+    loadModel('./Quest3s.glb');
 
     function handleFiles(files) {
       const f = Array.from(files).find(x => /\.(glb|gltf)$/i.test(x.name));
@@ -425,7 +476,7 @@
     document.getElementById('btn-open-loader').onclick = () => { modal.classList.remove('hidden'); modal.classList.add('flex'); };
     document.getElementById('btn-close-loader').onclick = () => { modal.classList.add('hidden'); modal.classList.remove('flex'); };
 
-    // Camera keyframes per stage (model sits to the right of the text cards)
+    // Camera keyframes per stage
     const V = (x, y, z) => new THREE.Vector3(x, y, z);
     const frames = [
       { cam: V(0.55, 0.2, 3.0), look: V(-0.55, 0, 0), rotY: -0.4 },
@@ -441,8 +492,7 @@
     let activeStage = 0;
     let autoRotate = true;
 
-    // ---------- Feature focus: highlight + rotate to show ----------
-    let focus = false, highlighted = [], calibrate = false;
+    // ---------- Hotspot Marker & Glow Effects ----------
     function makeGlow() {
       const c = document.createElement('canvas'); c.width = c.height = 128;
       const g = c.getContext('2d');
@@ -453,12 +503,14 @@
       const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
     }
     let overrides = {};
-    try { overrides = JSON.parse(localStorage.getItem('quest-hotspots') || '{}'); } catch (_) {}
+    try { overrides = JSON.parse(localStorage.getItem('quest3s-hotspots') || '{}'); } catch (_) {}
     const marker = new THREE.Sprite(new THREE.SpriteMaterial({ map: makeGlow(), depthTest: false, transparent: true }));
     marker.renderOrder = 999; marker.visible = false;
     root.add(marker);
 
+    let highlighted = [];
     const meshText = m => [m.name, m.parent && m.parent.name, Array.isArray(m.material) ? '' : (m.material && m.material.name)].join(' ').toLowerCase();
+    
     function highlightMesh(m) {
       if (Array.isArray(m.material) || !m.material || !('emissive' in m.material)) return;
       highlighted.push({ m, orig: m.material });
@@ -470,6 +522,7 @@
       highlighted.forEach(({ m, orig }) => { m.material.dispose(); m.material = orig; });
       highlighted = [];
     }
+    let focus = false;
     function clearFocus() { focus = false; marker.visible = false; clearHighlight(); }
 
     function focusFeature(item) {
@@ -497,22 +550,25 @@
       targetCam.set(0.4, THREE.MathUtils.clamp(local.y * 1.2, -0.8, 0.8) + 0.1, 2.3);
       targetLook.set(-0.6, THREE.MathUtils.clamp(local.y * 0.7, -0.6, 0.6), 0);
     }
+
     function applyFocus() {
       if (activeStage !== 1 || group === 'controller') { clearFocus(); return; }
       focusFeature(buttons[group][selected]);
     }
 
-    // Calibration: click the model to get a fractional position (copied to clipboard)
+    // Calibration Mode
     const toast = document.getElementById('calib-toast');
     const btnCal = document.getElementById('btn-calib');
+    let calibrate = false;
     btnCal.onclick = () => {
       calibrate = !calibrate;
       btnCal.textContent = 'Calibrate: ' + (calibrate ? 'on' : 'off');
       btnCal.classList.toggle('text-sky-300', calibrate);
       if (calibrate && autoRotate) btnRot.click();
       toast.classList.toggle('hidden', !calibrate);
-      toast.textContent = 'Pick an item, then click its real spot on the model';
+      toast.textContent = 'Select an item, then click its position on the 3D Quest 3S model';
     };
+
     const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
     let downAt = null;
     canvas.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; });
@@ -527,19 +583,19 @@
       const f = v => +v.toFixed(3);
       const p = [f(l.x / modelSize.x), f(l.y / modelSize.y), f(l.z / modelSize.z)];
       marker.position.copy(l); marker.visible = true;
-      if (group === 'controller') { toast.textContent = 'Switch to the Headset or Hand tab first'; return; }
+      if (group === 'controller') { toast.textContent = 'Switch to Headset or Hand tracking tab first'; return; }
       const item = buttons[group][selected];
       overrides[item.k || item.n] = { p };
       const json = JSON.stringify(overrides);
-      try { localStorage.setItem('quest-hotspots', json); } catch (_) {}
+      try { localStorage.setItem('quest3s-hotspots', json); } catch (_) {}
       try { navigator.clipboard.writeText(json); } catch (_) {}
-      toast.textContent = 'Saved "' + item.n + '" at [' + p.join(', ') + '] (all hotspots copied)';
+      toast.textContent = 'Saved "' + item.n + '" at [' + p.join(', ') + '] (Copied to clipboard)';
       applyFocus();
     });
 
     document.getElementById('btn-hs-clear').onclick = () => {
       overrides = {};
-      try { localStorage.removeItem('quest-hotspots'); } catch (_) {}
+      try { localStorage.removeItem('quest3s-hotspots'); } catch (_) {}
       applyFocus();
     };
 
@@ -554,6 +610,7 @@
       applyFocus();
     }
     window.scrollToStage = (i) => document.getElementById('stage-' + i)?.scrollIntoView({ behavior: 'smooth' });
+    
     addEventListener('scroll', () => {
       let best = 0, min = Infinity;
       document.querySelectorAll('section[data-stage]').forEach(s => {
@@ -591,11 +648,13 @@
       controls.update();
       renderer.render(scene, camera);
     }
+
     addEventListener('resize', () => {
       camera.aspect = innerWidth / innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(innerWidth, innerHeight);
     });
+
     setStage(0);
     setGroup('headset');
     animate();
